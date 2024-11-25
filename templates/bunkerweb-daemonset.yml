@@ -11,7 +11,7 @@ spec:
       {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      {{- with .Values.bunkerweb.podAnnotations }}
       annotations:
         # mandatory annotation
         bunkerweb.io/INSTANCE: "yes"
@@ -19,50 +19,43 @@ spec:
       {{- end }}
       labels:
         {{- include "bunkerweb.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
+        {{- with .Values.bunkerweb.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
+        bunkerweb.io/component: "bunkerweb"
     spec:
       containers:
         # using bunkerweb as name is mandatory
         - name: bunkerweb
-          image: bunkerity/bunkerweb:1.6.0-beta
-          imagePullPolicy: Always
+          image: {{ .Values.bunkerweb.repository }}:{{ .Values.bunkerweb.tag }}
+          imagePullPolicy: {{ .Values.bunkerweb.pullPolicy }}
+          {{- with .Values.bunkerweb.securityContext }}
           securityContext:
-            runAsUser: 101
-            runAsGroup: 101
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           ports:
             - containerPort: 8080
               hostPort: 80
             - containerPort: 8443
               hostPort: 443
           env:
+            # Mandatory for k8s integration
             - name: KUBERNETES_MODE
               value: "yes"
-            # replace with your DNS resolvers
-            # e.g. : kube-dns.kube-system.svc.cluster.local
+            # DNS resolver
             - name: DNS_RESOLVERS
-              value: "coredns.kube-system.svc.cluster.local"
-            # 10.0.0.0/8 is the cluster internal subnet
+              value: "{{ .Values.settings.misc.dnsResolvers }}"
+            # Internal subnet(s) + localhost
             - name: API_WHITELIST_IP
-              value: "127.0.0.0/8 10.0.0.0/8"
+              value: "{{ .Values.settings.misc.apiWhitelistIp }}"
+          {{- if .Values.bunkerweb.extraEnvs }}
+            {{- toYaml .Values.bunkerweb.extraEnvs | nindent 12 }}
+          {{- end }}
+          {{- with .Values.bunkerweb.livenessProbe }}
           livenessProbe:
-            exec:
-              command:
-                - /usr/share/bunkerweb/helpers/healthcheck.sh
-            initialDelaySeconds: 30
-            periodSeconds: 5
-            timeoutSeconds: 1
-            failureThreshold: 3
+            {{- toYaml . | nindent 12}}
+          {{- end }}
+          {{- with .Values.bunkerweb.readinessProbe }}
           readinessProbe:
-            exec:
-              command:
-                - /usr/share/bunkerweb/helpers/healthcheck.sh
-            initialDelaySeconds: 30
-            periodSeconds: 1
-            timeoutSeconds: 1
-            failureThreshold: 3
+            {{- toYaml . | nindent 12}}
+          {{- end }}

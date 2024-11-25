@@ -1,0 +1,131 @@
+{{- if .Values.mariadb.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  storageClassName: "{{ .Values.mariadb.persistence.storageClass }}"
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.mariadb.persistence.size }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "bunkerweb.labels" . | nindent 4 }}
+        bunkerweb.io/component: "mariadb"
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:11
+          imagePullPolicy: Always
+          env:
+            - name: MYSQL_RANDOM_ROOT_PASSWORD
+              value: "{{ .Values.mariadb.config.randomRootPassword }}"
+            - name: MYSQL_DATABASE
+              value: "{{ .Values.mariadb.config.db }}"
+            - name: MYSQL_USER
+              value: "{{ .Values.mariadb.config.user }}"
+            - name: MYSQL_PASSWORD
+              value: "{{ .Values.mariadb.config.password }}"
+          volumeMounts:
+            - mountPath: "/var/lib/mysql"
+              name: vol-db
+      volumes:
+        - name: vol-db
+          persistentVolumeClaim:
+            claimName: mariadb-{{ include "bunkerweb.fullname" . }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    bunkerweb.io/component: "redis"
+  ports:
+    - name: sql
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+{{- end }}
+
+
+
+
+
+
+
+
+
+
+
+
+
+{{- if .Values.redis.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "bunkerweb.labels" . | nindent 4 }}
+        bunkerweb.io/component: "redis"
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          imagePullPolicy: Always
+          {{- if .Values.redis.enabled -}}
+          command: ["redis-server"]
+          args: ["--requirepass", "$(REDIS_PASS)"]
+          env:
+            - name: "REDIS_AUTH"
+              value: "{{ .Values.redis.config.password }}"
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    bunkerweb.io/component: "redis"
+  ports:
+    - name: redis
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+{{- end }}

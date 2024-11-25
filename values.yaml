@@ -110,7 +110,7 @@ ui:
   # todo : probes
 
 # Database variables
-db:
+mariadb:
   enabled: true
   persistence:
     size: 5Gi

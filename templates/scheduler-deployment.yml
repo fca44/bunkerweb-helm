@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scheduler-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "bunkerweb.labels" . | nindent 8 }}
+        {{- with .Values.scheduler.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        bunkerweb.io/component: "scheduler"
+    spec:
+      serviceAccountName: {{ include "bunkerweb.fullname" . }}
+      containers:
+        - name: bunkerweb-scheduler
+          image: {{ .Values.scheduler.repository }}:{{ .Values.scheduler.tag }}
+          imagePullPolicy: {{ .Values.scheduler.pullPolicy }}
+          {{- with .Values.scheduler.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
+          env:
+            # Mandatory for k8s integration
+            - name: KUBERNETES_MODE
+              value: "yes"
+            # Mandatory for k8s integration
+            - name: DATABASE_URI
+              value: "mariadb+pymysql://bunkerweb:changeme@svc-bunkerweb-db:3306/db"
