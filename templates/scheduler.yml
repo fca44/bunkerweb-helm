@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bunkerweb-controller
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: bunkerweb-controller
+  template:
+    metadata:
+      labels:
+        app: bunkerweb-controller
+    spec:
+      serviceAccountName: sa-bunkerweb
+      containers:
+        - name: bunkerweb-controller
+          image: bunkerity/bunkerweb-autoconf:1.6.0-beta
+          imagePullPolicy: Always
+          env:
+            - name: KUBERNETES_MODE
+              value: "yes"
+            - name: DATABASE_URI
+              value: "mariadb+pymysql://bunkerweb:changeme@svc-bunkerweb-db:3306/db" # Remember to set a stronger password for the database

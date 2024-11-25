@@ -1,0 +1,134 @@
+# Global common variables
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# Settings related to BW in a k8s environment
+settings:
+  kubernetes:
+    namespaces: ""
+    ingressClass: ""
+    domainName: "cluster.local"
+  misc:
+    databaseUri: ""
+    dnsResolvers: "coredns.kube-system.svc.cluster.local"
+    apiWhitelistIp: "127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
+  redis:
+    useRedis: "yes"
+    redisHost: ""
+    redisUsername: ""
+    redisPassword: ""
+  ui:
+    wizard: true
+    adminUsername: ""
+    adminPassword: ""
+    overrideAdminCreds: "no"
+    flaskSecret: ""
+    totpSecrets: ""
+
+# BunkerWeb variables
+bunkerweb:
+  repository: bunkerity/bunkerweb
+  pullPolicy: Always
+  tag: 1.6.0-beta
+  podAnnotations: {}
+  podLabels: {}
+  securityContext:
+    runAsUser: 101
+    runAsGroup: 101
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  extraEnvs: []
+  livenessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck.sh
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 3
+  readinessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck.sh
+    initialDelaySeconds: 30
+    periodSeconds: 1
+    timeoutSeconds: 1
+    failureThreshold: 3
+
+# Scheduler variables
+scheduler:
+  repository: bunkerity/bunkerweb-scheduler
+  pullPolicy: Always
+  tag: 1.6.0-beta
+  podAnnotations: {}
+  podLabels: {}
+  securityContext:
+    runAsUser: 101
+    runAsGroup: 101
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  extraEnvs: []
+  # todo : probes
+
+# Controller variables
+controller:
+  repository: bunkerity/bunkerweb-autoconf
+  pullPolicy: Always
+  tag: 1.6.0-beta
+  podAnnotations: {}
+  podLabels: {}
+  securityContext:
+    runAsUser: 101
+    runAsGroup: 101
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  extraEnvs: []
+  # todo : probes
+
+ui:
+  enabled: true
+  repository: bunkerity/bunkerweb-ui
+  pullPolicy: Always
+  tag: 1.6.0-beta
+  podAnnotations: {}
+  podLabels: {}
+  securityContext:
+    runAsUser: 101
+    runAsGroup: 101
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  extraEnvs: []
+  # todo : probes
+
+# Database variables
+db:
+  enabled: true
+  persistence:
+    size: 5Gi
+    storageClass: ""
+  config:
+    ramdomRootPassword: "yes"
+    database: "db"
+    user: "bunkerweb"
+    password: "changeme"
+
+# Redis variables
+redis:
+  enabled: true
+  config:
+    password: "changeme"
+
+# IngressClass variables
+ingressClass:
+  enabled: true
+  name: "bunkerweb"
+  controller: "bunkerweb.io/ingress-controller"

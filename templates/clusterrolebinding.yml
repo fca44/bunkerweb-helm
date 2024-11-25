@@ -1,0 +1,15 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "bunkerweb.fullname" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "bunkerweb.fullname" . }}
+    namespace: {{ include "bunkerweb.namespace" . }}
+    apiGroup: ""
+roleRef:
+  kind: ClusterRole
+  name: {{ include "bunkerweb.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,11 @@
+{{- if .Values.ingressClass.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: IngressClass
+metadata:
+  name: {{ .Values.ingressClass.name }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
+spec:
+  controller: {{ .Values.ingressClass.controller }}
+{{- end }}
