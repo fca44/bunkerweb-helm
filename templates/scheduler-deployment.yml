@@ -35,4 +35,4 @@ spec:
               value: "yes"
             # Mandatory for k8s integration
             - name: DATABASE_URI
-              value: "mariadb+pymysql://bunkerweb:changeme@svc-bunkerweb-db:3306/db"
+              value: {{ include "bunkerweb.databaseUri" . }}

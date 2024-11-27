@@ -1,6 +1,7 @@
 # Global common variables
 imagePullSecrets: []
 nameOverride: ""
+namespaceOverride: ""
 fullnameOverride: ""
 
 # Settings related to BW in a k8s environment

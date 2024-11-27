@@ -51,20 +51,25 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Create the name of the service account to use
-*/}}
-{{- define "bunkerweb.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create }}
-{{- default (include "bunkerweb.fullname" .) .Values.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.serviceAccount.name }}
-{{- end }}
-{{- end }}
-
-{{/*
 Expand the namespace of the release.
 Allows overriding it for multi-namespace deployments in combined charts.
 */}}
-{{- define "ingress-nginx.namespace" -}}
+{{- define "bunkerweb.namespace" -}}
 {{- default .Release.Namespace .Values.namespaceOverride | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+
+{{/*
+DATABASE_URI setting
+*/}}
+{{- define "bunkerweb.databaseUri" -}}
+{{- if .Values.mariadb.enabled -}}
+  {{- $user := .Values.mariadb.config.user -}}
+  {{- $password := .Values.mariadb.config.password -}}
+  {{- $host := printf "mariadb-%s" (include "bunkerweb.fullname" .) -}}
+  {{- $db := .Values.mariadb.config.db -}}
+  {{- printf "mariadb+pymysql://%s:%s@%s:3306/%s" $user $password $host $db -}}
+{{- else -}}
+  {{- .Values.settings.misc.databaseUri -}}
+{{- end -}}
 {{- end -}}
