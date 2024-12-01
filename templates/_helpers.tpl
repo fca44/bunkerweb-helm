@@ -73,3 +73,24 @@ DATABASE_URI setting
   {{- .Values.settings.misc.databaseUri -}}
 {{- end -}}
 {{- end -}}
+
+{{- /*
+REDIS settings
+*/}}
+{{- define "bunkerweb.redisEnv" -}}
+  {{- if .Values.redis.enabled }}
+- name: REDIS_HOST
+  value: "redis-{{ include "bunkerweb.fullname" . }}"
+- name: REDIS_USERNAME
+  value: ""
+- name: REDIS_PASSWORD
+  value: "{{ .Values.redis.config.password }}"
+  {{- else }}
+- name: REDIS_HOST
+  value: "{{ .Values.settings.redis.redisHost }}"
+- name: REDIS_USERNAME
+  value: "{{ .Values.settings.redis.redisUsername }}"
+- name: REDIS_PASSWORD
+  value: "{{ .Values.settings.redis.redisPassword }}"
+  {{- end }}
+{{- end }}

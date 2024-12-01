@@ -1,0 +1,18 @@
+{{- if .Values.ingressClass.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: ui-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+    bunkerweb.io/component: "ui"
+  ports:
+    - name: http
+      protocol: TCP
+      port: 7000
+      targetPort: 7000
+{{- end }}

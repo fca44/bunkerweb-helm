@@ -13,35 +13,16 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "bunkerweb.labels" . | nindent 4 }}
+        {{- include "bunkerweb.labels" . | nindent 8 }}
         bunkerweb.io/component: "redis"
     spec:
       containers:
         - name: redis
           image: redis:7-alpine
           imagePullPolicy: Always
-          {{- if .Values.redis.enabled -}}
           command: ["redis-server"]
           args: ["--requirepass", "$(REDIS_PASS)"]
           env:
-            - name: "REDIS_AUTH"
+            - name: "REDIS_PASS"
               value: "{{ .Values.redis.config.password }}"
-          {{- end }}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis-{{ include "bunkerweb.fullname" . }}
-  namespace: {{ include "bunkerweb.namespace" . }}
-  labels:
-    {{- include "bunkerweb.labels" . | nindent 4 }}
-spec:
-  type: ClusterIP
-  selector:
-    bunkerweb.io/component: "redis"
-  ports:
-    - name: redis
-      protocol: TCP
-      port: 6379
-      targetPort: 6379
 {{- end }}

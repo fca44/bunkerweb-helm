@@ -8,6 +8,7 @@ metadata:
 spec:
   strategy:
     type: Recreate
+  replicas: 1
   selector:
     matchLabels:
       {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
@@ -33,6 +34,13 @@ spec:
             # Mandatory for k8s integration
             - name: KUBERNETES_MODE
               value: "yes"
-            # Mandatory for k8s integration
             - name: DATABASE_URI
-              value: {{ include "bunkerweb.databaseUri" . }}
+              value: "{{ include "bunkerweb.databaseUri" . }}"
+            {{- if .Values.settings.ui.wizard }}
+            - name: UI_HOST
+              value: "http://ui-{{ include "bunkerweb.fullname" . }}:7000"
+            {{- end }}
+            {{- include "bunkerweb.redisEnv" . | nindent 12 }}
+            {{- if .Values.scheduler.extraEnvs }}
+              {{- toYaml .Values.scheduler.extraEnvs | nindent 12 }}
+            {{- end }}

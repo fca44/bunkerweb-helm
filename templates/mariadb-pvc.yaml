@@ -1,0 +1,16 @@
+{{- if .Values.mariadb.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mariadb-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  storageClassName: "{{ .Values.mariadb.persistence.storageClass }}"
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.mariadb.persistence.size }}
+{{- end }}

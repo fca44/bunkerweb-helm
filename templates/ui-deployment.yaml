@@ -1,0 +1,47 @@
+{{- if .Values.ingressClass.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "bunkerweb.labels" . | nindent 8 }}
+        {{- with .Values.ui.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        bunkerweb.io/component: "ui"
+    spec:
+      containers:
+        - name: bunkerweb-ui
+          image: {{ .Values.ui.repository }}:{{ .Values.ui.tag }}
+          imagePullPolicy: {{ .Values.ui.pullPolicy }}
+          {{- with .Values.ui.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
+          env:
+            - name: DATABASE_URI
+              value: "{{ include "bunkerweb.databaseUri" . }}"
+            - name: ADMIN_USERNAME
+              value: "{{ .Values.settings.ui.adminUsername }}"
+            - name: ADMIN_PASSWORD
+              value: "{{ .Values.settings.ui.adminPassword }}"
+            - name: OVERRIDE_ADMIN_CREDS
+              value: "{{ .Values.settings.ui.overrideAdminCreds }}"
+            - name: TOTP_SECRETS
+              value: "{{ .Values.settings.ui.totpSecrets }}"
+            {{- if .Values.ui.extraEnvs }}
+              {{- toYaml .Values.ui.extraEnvs | nindent 12 }}
+            {{- end }}
+{{- end }}

@@ -1,19 +1,4 @@
 {{- if .Values.mariadb.enabled -}}
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mariadb-{{ include "bunkerweb.fullname" . }}
-  namespace: {{ include "bunkerweb.namespace" . }}
-  labels:
-    {{- include "bunkerweb.labels" . | nindent 4 }}
-spec:
-  storageClassName: "{{ .Values.mariadb.persistence.storageClass }}"
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: {{ .Values.mariadb.persistence.size }}
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -28,7 +13,7 @@ spec:
   template:
     metadata:
       labels:
-        {{- include "bunkerweb.labels" . | nindent 4 }}
+        {{- include "bunkerweb.labels" . | nindent 8 }}
         bunkerweb.io/component: "mariadb"
     spec:
       containers:
@@ -51,21 +36,4 @@ spec:
         - name: vol-db
           persistentVolumeClaim:
             claimName: mariadb-{{ include "bunkerweb.fullname" . }}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mariadb-{{ include "bunkerweb.fullname" . }}
-  namespace: {{ include "bunkerweb.namespace" . }}
-  labels:
-    {{- include "bunkerweb.labels" . | nindent 4 }}
-spec:
-  type: ClusterIP
-  selector:
-    bunkerweb.io/component: "redis"
-  ports:
-    - name: sql
-      protocol: TCP
-      port: 3306
-      targetPort: 3306
 {{- end }}
