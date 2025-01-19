@@ -1,0 +1,36 @@
+name: Deploy helm chart to dev
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - uses: azure/setup-helm@v4.2.0
+      id: install
+    
+    - name: Package chart
+      run: |
+        cd ./charts
+        helm package ./bunkerweb/
+        helm repo index . --url https://repo.bunkerweb.io/charts-dev
+
+    - name: Upload files via SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_HOST: ${{ secrets.SSH_HOST }}
+        SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
+        scp -r ./charts/bunkerweb-*.tgz $SSH_USERNAME@$SSH_HOST:/var/www/html/charts-dev
+        scp ./charts/index.yaml $SSH_USERNAME@$SSH_HOST:/var/www/html/charts-dev
