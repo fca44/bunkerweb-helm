@@ -32,5 +32,5 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
-        scp -r ./charts/bunkerweb-*.tgz $SSH_USERNAME@$SSH_HOST:/var/www/html/charts-dev
-        scp ./charts/index.yaml $SSH_USERNAME@$SSH_HOST:/var/www/html/charts-dev
+        scp -r ./charts/*.tgz $SSH_USERNAME@$SSH_HOST:/var/www/html/charts-dev
+        ssh $SSH_USERNAME@$SSH_HOST "cd /var/www/html/charts-dev && helm repo index . --url https://repo.bunkerweb.io/charts-dev"
