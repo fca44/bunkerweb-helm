@@ -24,7 +24,7 @@ spec:
             - name: MARIADB_RANDOM_ROOT_PASSWORD
               value: "{{ .Values.mariadb.config.randomRootPassword }}"
             - name: MARIADB_DATABASE
-              value: "{{ .Values.mariadb.config.db }}"
+              value: "{{ .Values.mariadb.config.database }}"
             - name: MARIADB_USER
               value: "{{ .Values.mariadb.config.user }}"
             - name: MARIADB_PASSWORD

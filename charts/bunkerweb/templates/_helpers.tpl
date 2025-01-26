@@ -67,7 +67,7 @@ DATABASE_URI setting
   {{- $user := .Values.mariadb.config.user -}}
   {{- $password := .Values.mariadb.config.password -}}
   {{- $host := printf "mariadb-%s" (include "bunkerweb.fullname" .) -}}
-  {{- $db := .Values.mariadb.config.db -}}
+  {{- $db := .Values.mariadb.config.database -}}
   {{- printf "mariadb+pymysql://%s:%s@%s:3306/%s" $user $password $host $db -}}
 {{- else -}}
   {{- .Values.settings.misc.databaseUri -}}
