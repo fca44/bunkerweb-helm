@@ -21,13 +21,13 @@ spec:
           image: mariadb:11
           imagePullPolicy: Always
           env:
-            - name: MYSQL_RANDOM_ROOT_PASSWORD
+            - name: MARIADB_RANDOM_ROOT_PASSWORD
               value: "{{ .Values.mariadb.config.randomRootPassword }}"
-            - name: MYSQL_DATABASE
+            - name: MARIADB_DATABASE
               value: "{{ .Values.mariadb.config.db }}"
-            - name: MYSQL_USER
+            - name: MARIADB_USER
               value: "{{ .Values.mariadb.config.user }}"
-            - name: MYSQL_PASSWORD
+            - name: MARIADB_PASSWORD
               value: "{{ .Values.mariadb.config.password }}"
           volumeMounts:
             - mountPath: "/var/lib/mysql"
