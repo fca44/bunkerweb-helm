@@ -36,4 +36,8 @@ spec:
         - name: vol-db
           persistentVolumeClaim:
             claimName: mariadb-{{ include "bunkerweb.fullname" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end }}

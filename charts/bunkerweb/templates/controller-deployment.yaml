@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: scheduler-{{ include "bunkerweb.fullname" . }}
+  name: controller-{{ include "bunkerweb.fullname" . }}
   namespace: {{ include "bunkerweb.namespace" . }}
   labels:
     {{- include "bunkerweb.labels" . | nindent 4 }}
@@ -16,17 +16,17 @@ spec:
     metadata:
       labels:
         {{- include "bunkerweb.labels" . | nindent 8 }}
-        {{- with .Values.scheduler.podLabels }}
+        {{- with .Values.controller.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
-        bunkerweb.io/component: "scheduler"
+        bunkerweb.io/component: "controller"
     spec:
       serviceAccountName: {{ include "bunkerweb.fullname" . }}
       containers:
-        - name: bunkerweb-scheduler
-          image: {{ .Values.scheduler.repository }}:{{ .Values.scheduler.tag }}
-          imagePullPolicy: {{ .Values.scheduler.pullPolicy }}
-          {{- with .Values.scheduler.securityContext }}
+        - name: bunkerweb-controller
+          image: {{ .Values.controller.repository }}:{{ .Values.controller.tag }}
+          imagePullPolicy: {{ .Values.controller.pullPolicy }}
+          {{- with .Values.controller.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12}}
           {{- end }}
@@ -36,14 +36,12 @@ spec:
               value: "yes"
             - name: DATABASE_URI
               value: "{{ include "bunkerweb.databaseUri" . }}"
-            {{- if .Values.settings.ui.wizard }}
-            - name: UI_HOST
-              value: "http://ui-{{ include "bunkerweb.fullname" . }}:7000"
-            {{- end }}
-            {{- include "bunkerweb.redisEnv" . | nindent 12 }}
-            {{- if .Values.scheduler.extraEnvs }}
-              {{- toYaml .Values.scheduler.extraEnvs | nindent 12 }}
-            {{- end }}
+            - name: NAMESPACES
+              value: "{{ .Values.settings.namespaces }}"
+            - name: KUBERNETES_INGRESS_CLASS
+              value: "{{ .Values.settings.ingressClass }}"
+            - name: KUBERNETES_DOMAIN_NAME
+              value: "{{ .Values.settings.domainName }}"
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

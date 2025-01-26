@@ -3,6 +3,7 @@ imagePullSecrets: []
 nameOverride: ""
 namespaceOverride: ""
 fullnameOverride: ""
+nodeSelector: {}
 
 # Settings related to BW in a k8s environment
 settings:
@@ -27,11 +28,18 @@ settings:
     flaskSecret: ""
     totpSecrets: ""
 
+# Service
+service:
+  enabled: true
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  annotations: {}
+
 # BunkerWeb variables
 bunkerweb:
   repository: bunkerity/bunkerweb
   pullPolicy: Always
-  tag: 1.6.0-beta
+  tag: 1.6.0-rc2
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -63,7 +71,7 @@ bunkerweb:
 scheduler:
   repository: bunkerity/bunkerweb-scheduler
   pullPolicy: Always
-  tag: 1.6.0-beta
+  tag: 1.6.0-rc2
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -80,7 +88,7 @@ scheduler:
 controller:
   repository: bunkerity/bunkerweb-autoconf
   pullPolicy: Always
-  tag: 1.6.0-beta
+  tag: 1.6.0-rc2
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -97,7 +105,7 @@ ui:
   enabled: true
   repository: bunkerity/bunkerweb-ui
   pullPolicy: Always
-  tag: 1.6.0-beta
+  tag: 1.6.0-rc2
   podAnnotations: {}
   podLabels: {}
   securityContext:
