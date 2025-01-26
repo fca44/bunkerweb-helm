@@ -36,6 +36,16 @@ spec:
               value: "yes"
             - name: DATABASE_URI
               value: "{{ include "bunkerweb.databaseUri" . }}"
+            - name: SERVER_NAME
+              value: ""
+            - name: MULTISITE
+              value: "yes"
+            - name: DNS_RESOLVERS
+              value: "{{ .Values.settings.misc.dnsResolvers }}"
+            - name: API_WHITELIST_IP
+              value: "{{ .Values.settings.misc.apiWhitelistIp }}"
+            - name: BUNKERWEB_INSTANCES
+              value: ""
             {{- if .Values.settings.ui.wizard }}
             - name: UI_HOST
               value: "http://ui-{{ include "bunkerweb.fullname" . }}:7000"
