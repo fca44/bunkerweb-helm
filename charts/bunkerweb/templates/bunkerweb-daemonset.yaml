@@ -11,10 +11,10 @@ spec:
       {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.bunkerweb.podAnnotations }}
       annotations:
         # mandatory annotation
         bunkerweb.io/INSTANCE: "yes"
+      {{- with .Values.bunkerweb.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
