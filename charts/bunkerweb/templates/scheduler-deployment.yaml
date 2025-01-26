@@ -48,7 +48,7 @@ spec:
               value: ""
             {{- if .Values.settings.ui.wizard }}
             - name: UI_HOST
-              value: "http://ui-{{ include "bunkerweb.fullname" . }}:7000"
+              value: "{{ include "bunkerweb.uiHost" . }}"
             {{- end }}
             {{- include "bunkerweb.redisEnv" . | nindent 12 }}
             {{- if .Values.scheduler.extraEnvs }}

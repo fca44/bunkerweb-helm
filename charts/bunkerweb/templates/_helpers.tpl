@@ -58,6 +58,12 @@ Allows overriding it for multi-namespace deployments in combined charts.
 {{- default .Release.Namespace .Values.namespaceOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+UI_HOST setting
+*/}}
+{{- define "bunkerweb.uiHost" -}}
+{{- printf "http://ui-%s.%s.svc.%s:7000" (include "bunkerweb.fullname" .) (include "bunkerweb.namespace" .) .Values.settings.kubernetes.domainName -}}
+{{- end -}}
 
 {{/*
 DATABASE_URI setting
