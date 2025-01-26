@@ -37,11 +37,11 @@ spec:
             - name: DATABASE_URI
               value: "{{ include "bunkerweb.databaseUri" . }}"
             - name: NAMESPACES
-              value: "{{ .Values.settings.namespaces }}"
+              value: "{{ .Values.settings.kubernetes.namespaces }}"
             - name: KUBERNETES_INGRESS_CLASS
-              value: "{{ .Values.settings.ingressClass }}"
+              value: "{{ .Values.settings.kubernetes.ingressClass }}"
             - name: KUBERNETES_DOMAIN_NAME
-              value: "{{ .Values.settings.domainName }}"
+              value: "{{ .Values.settings.kubernetes.domainName }}"
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
