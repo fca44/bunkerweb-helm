@@ -7,6 +7,17 @@ nodeSelector: {}
 
 # Settings related to BW in a k8s environment
 settings:
+  # Specify the name of an existing secret containing the values of certain sensitive parameters listed here with their corresponding keys :
+  # databaseUri : database-uri
+  # redisUsername : redis-username
+  # redisPassword : redis-password
+  # adminUsername : admin-username
+  # adminPassword : admin-password
+  # flaskSecret: flask-secret
+  # totpSecrets: totp-secrets
+  # mariadb.user : mariadb-username
+  # mariadb.password : mariadb-password
+  existingSecret: ""
   kubernetes:
     namespaces: ""
     ingressClass: ""
@@ -39,7 +50,7 @@ service:
 bunkerweb:
   repository: bunkerity/bunkerweb
   pullPolicy: Always
-  tag: 1.6.0-rc2
+  tag: 1.6.0-rc3
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -71,7 +82,7 @@ bunkerweb:
 scheduler:
   repository: bunkerity/bunkerweb-scheduler
   pullPolicy: Always
-  tag: 1.6.0-rc2
+  tag: 1.6.0-rc3
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -88,7 +99,7 @@ scheduler:
 controller:
   repository: bunkerity/bunkerweb-autoconf
   pullPolicy: Always
-  tag: 1.6.0-rc2
+  tag: 1.6.0-rc3
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -105,7 +116,7 @@ ui:
   enabled: true
   repository: bunkerity/bunkerweb-ui
   pullPolicy: Always
-  tag: 1.6.0-rc2
+  tag: 1.6.0-rc3
   podAnnotations: {}
   podLabels: {}
   securityContext:

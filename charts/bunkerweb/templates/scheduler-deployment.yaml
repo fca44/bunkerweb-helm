@@ -35,7 +35,13 @@ spec:
             - name: KUBERNETES_MODE
               value: "yes"
             - name: DATABASE_URI
+              {{- if not (empty .Values.settings.existingSecret) }}
+              secretKeyRef:
+                name: {{ .Values.settings.existingSecret }}
+                key: database-uri
+              {{- else }}
               value: "{{ include "bunkerweb.databaseUri" . }}"
+              {{- end }}
             - name: SERVER_NAME
               value: ""
             - name: MULTISITE
