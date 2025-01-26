@@ -125,7 +125,7 @@ mariadb:
     size: 5Gi
     storageClass: ""
   config:
-    ramdomRootPassword: "1"
+    randomRootPassword: "1"
     database: "db"
     user: "bunkerweb"
     password: "changeme"
