@@ -7,7 +7,9 @@ metadata:
   labels:
     {{- include "bunkerweb.labels" . | nindent 4 }}
 spec:
+  {{- if not (empty .Values.mariadb.persistence.storageClass) }}
   storageClassName: "{{ .Values.mariadb.persistence.storageClass }}"
+  {{- end }}
   accessModes:
     - ReadWriteOnce
   resources:
