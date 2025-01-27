@@ -15,7 +15,7 @@ settings:
   # adminPassword : admin-password
   # flaskSecret: flask-secret
   # totpSecrets: totp-secrets
-  # mariadb.user : mariadb-username
+  # mariadb.user : mariadb-user
   # mariadb.password : mariadb-password
   existingSecret: ""
   kubernetes:

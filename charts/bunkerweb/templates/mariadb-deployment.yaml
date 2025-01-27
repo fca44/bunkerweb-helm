@@ -26,9 +26,23 @@ spec:
             - name: MARIADB_DATABASE
               value: "{{ .Values.mariadb.config.database }}"
             - name: MARIADB_USER
+              {{- if not (empty .Values.settings.existingSecret) }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.settings.existingSecret }}"
+                  key: mariadb-user
+              {{- else }}
               value: "{{ .Values.mariadb.config.user }}"
+              {{- end }}
             - name: MARIADB_PASSWORD
+              {{- if not (empty .Values.settings.existingSecret) }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.settings.existingSecret }}"
+                  key: mariadb-password
+              {{- else }}
               value: "{{ .Values.mariadb.config.password }}"
+              {{- end }}
           volumeMounts:
             - mountPath: "/var/lib/mysql"
               name: vol-db
