@@ -58,6 +58,12 @@ Allows overriding it for multi-namespace deployments in combined charts.
 {{- default .Release.Namespace .Values.namespaceOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+UI_HOST setting
+*/}}
+{{- define "bunkerweb.uiHost" -}}
+{{- printf "http://ui-%s.%s.svc.%s:7000" (include "bunkerweb.fullname" .) (include "bunkerweb.namespace" .) .Values.settings.kubernetes.domainName -}}
+{{- end -}}
 
 {{/*
 DATABASE_URI setting
@@ -66,8 +72,8 @@ DATABASE_URI setting
 {{- if .Values.mariadb.enabled -}}
   {{- $user := .Values.mariadb.config.user -}}
   {{- $password := .Values.mariadb.config.password -}}
-  {{- $host := printf "mariadb-%s" (include "bunkerweb.fullname" .) -}}
-  {{- $db := .Values.mariadb.config.db -}}
+  {{- $host := printf "mariadb-%s.%s.svc.%s" (include "bunkerweb.fullname" .) (include "bunkerweb.namespace" .) .Values.settings.kubernetes.domainName -}}
+  {{- $db := .Values.mariadb.config.database -}}
   {{- printf "mariadb+pymysql://%s:%s@%s:3306/%s" $user $password $host $db -}}
 {{- else -}}
   {{- .Values.settings.misc.databaseUri -}}
@@ -84,13 +90,34 @@ REDIS settings
 - name: REDIS_USERNAME
   value: ""
 - name: REDIS_PASSWORD
+    {{- if not (empty .Values.settings.existingSecret) }}
+  valueFrom:
+    secretKeyRef:
+      name: "{{ .Values.settings.existingSecret }}"
+      key: redis-password
+    {{- else }}
   value: "{{ .Values.redis.config.password }}"
+    {{- end }}
   {{- else }}
 - name: REDIS_HOST
   value: "{{ .Values.settings.redis.redisHost }}"
 - name: REDIS_USERNAME
+    {{- if not (empty .Values.settings.existingSecret) }}
+  valueFrom:
+    secretKeyRef:
+      name: "{{ .Values.settings.existingSecret }}"
+      key: redis-username
+    {{- else }}
   value: "{{ .Values.settings.redis.redisUsername }}"
+    {{- end }}
 - name: REDIS_PASSWORD
+    {{- if not (empty .Values.settings.existingSecret) }}
+  valueFrom:
+    secretKeyRef:
+      name: "{{ .Values.settings.existingSecret }}"
+      key: redis-password
+    {{- else }}
   value: "{{ .Values.settings.redis.redisPassword }}"
+    {{- end }}
   {{- end }}
 {{- end }}

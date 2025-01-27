@@ -3,9 +3,22 @@ imagePullSecrets: []
 nameOverride: ""
 namespaceOverride: ""
 fullnameOverride: ""
+nodeSelector: {}
 
 # Settings related to BW in a k8s environment
 settings:
+  # Specify the name of an existing secret containing the values of certain sensitive parameters listed here with their corresponding keys :
+  # settings.misc.databaseUri : database-uri
+  # settings.redis.redisUsername : redis-username
+  # settings.redis.redisPassword : redis-password
+  # settings.ui.adminUsername : admin-username
+  # settings.ui.adminPassword : admin-password
+  # settings.ui.flaskSecret: flask-secret
+  # settings.ui.totpSecrets: totp-secrets
+  # redis.config.password : redis-password
+  # mariadb.config.user : mariadb-user
+  # mariadb.config.password : mariadb-password
+  existingSecret: ""
   kubernetes:
     namespaces: ""
     ingressClass: ""
@@ -27,11 +40,18 @@ settings:
     flaskSecret: ""
     totpSecrets: ""
 
+# Service
+service:
+  enabled: true
+  type: LoadBalancer
+  externalTrafficPolicy: Local
+  annotations: {}
+
 # BunkerWeb variables
 bunkerweb:
   repository: bunkerity/bunkerweb
   pullPolicy: Always
-  tag: 1.6.0-beta
+  tag: 1.6.0-rc2
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -63,7 +83,7 @@ bunkerweb:
 scheduler:
   repository: bunkerity/bunkerweb-scheduler
   pullPolicy: Always
-  tag: 1.6.0-beta
+  tag: 1.6.0-rc2
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -80,7 +100,7 @@ scheduler:
 controller:
   repository: bunkerity/bunkerweb-autoconf
   pullPolicy: Always
-  tag: 1.6.0-beta
+  tag: 1.6.0-rc2
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -97,7 +117,7 @@ ui:
   enabled: true
   repository: bunkerity/bunkerweb-ui
   pullPolicy: Always
-  tag: 1.6.0-beta
+  tag: 1.6.0-rc2
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -117,7 +137,7 @@ mariadb:
     size: 5Gi
     storageClass: ""
   config:
-    ramdomRootPassword: "yes"
+    randomRootPassword: "1"
     database: "db"
     user: "bunkerweb"
     password: "changeme"

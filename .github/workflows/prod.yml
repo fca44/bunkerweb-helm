@@ -1,9 +1,9 @@
-name: Deploy helm chart to dev
+name: Deploy helm chart to prod
 
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
   deploy:
@@ -32,8 +32,8 @@ jobs:
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
         cd charts
-        scp *.tgz $SSH_USERNAME@$SSH_HOST:/var/www/html/charts-dev
-        scp $SSH_USERNAME@$SSH_HOST:/var/www/html/charts-dev/* .
-        helm repo index . --url https://repo.bunkerweb.io/charts-dev
-        scp *.tgz $SSH_USERNAME@$SSH_HOST:/var/www/html/charts-dev
-        scp index.yaml $SSH_USERNAME@$SSH_HOST:/var/www/html/charts-dev
+        scp *.tgz $SSH_USERNAME@$SSH_HOST:/var/www/html/charts
+        scp $SSH_USERNAME@$SSH_HOST:/var/www/html/charts/* .
+        helm repo index . --url https://repo.bunkerweb.io/charts
+        scp *.tgz $SSH_USERNAME@$SSH_HOST:/var/www/html/charts
+        scp index.yaml $SSH_USERNAME@$SSH_HOST:/var/www/html/charts

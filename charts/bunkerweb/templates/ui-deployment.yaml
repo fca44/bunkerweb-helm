@@ -32,16 +32,57 @@ spec:
           {{- end }}
           env:
             - name: DATABASE_URI
+              {{- if not (empty .Values.settings.existingSecret) }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.settings.existingSecret }}
+                  key: database-uri
+              {{- else }}
               value: "{{ include "bunkerweb.databaseUri" . }}"
+              {{- end }}
             - name: ADMIN_USERNAME
+              {{- if not (empty .Values.settings.existingSecret) }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.settings.existingSecret }}"
+                  key: admin-username
+              {{- else }}
               value: "{{ .Values.settings.ui.adminUsername }}"
+              {{- end }}
             - name: ADMIN_PASSWORD
+              {{- if not (empty .Values.settings.existingSecret) }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.settings.existingSecret }}"
+                  key: admin-password
+              {{- else }}
               value: "{{ .Values.settings.ui.adminPassword }}"
+              {{- end }}
+            - name: TOTP_SECRETS
+              {{- if not (empty .Values.settings.existingSecret) }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.settings.existingSecret }}"
+                  key: totp-secrets
+              {{- else }}
+              value: "{{ .Values.settings.ui.totpSecrets }}"
+              {{- end }}
+            - name: FLASK_SECRET
+              {{- if not (empty .Values.settings.existingSecret) }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.settings.existingSecret }}"
+                  key: flask-secret
+              {{- else }}
+              value: "{{ .Values.settings.ui.flaskSecret }}"
+              {{- end }}
             - name: OVERRIDE_ADMIN_CREDS
               value: "{{ .Values.settings.ui.overrideAdminCreds }}"
-            - name: TOTP_SECRETS
-              value: "{{ .Values.settings.ui.totpSecrets }}"
             {{- if .Values.ui.extraEnvs }}
               {{- toYaml .Values.ui.extraEnvs | nindent 12 }}
             {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end }}

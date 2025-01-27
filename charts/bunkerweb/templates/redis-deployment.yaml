@@ -21,8 +21,19 @@ spec:
           image: redis:7-alpine
           imagePullPolicy: Always
           command: ["redis-server"]
-          args: ["--requirepass", "$(REDIS_PASS)"]
+          args: ["--requirepass", "$(REDIS_PASSWORD)"]
           env:
-            - name: "REDIS_PASS"
+            - name: REDIS_PASSWORD
+              {{- if not (empty .Values.settings.existingSecret) }}
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.settings.existingSecret }}"
+                  key: redis-password
+              {{- else }}
               value: "{{ .Values.redis.config.password }}"
+              {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end }}
