@@ -8,9 +8,14 @@ Please first refer to the [BunkerWeb documentation](https://docs.bunkerweb.io/la
 
 ## Helm repository
 
-The BunkerWeb Helm chart repository is available at `https://repo.bunkerweb.io/helm` : 
+The BunkerWeb Helm chart repository is available at `https://repo.bunkerweb.io/charts` : 
 ```bash
-helm repo add https://repo.bunkerweb.io/charts
+helm repo add bunkerweb https://repo.bunkerweb.io/charts
+```
+
+You can then use the `bunkerweb` helm chart from that repository :
+```bash
+helm install -f myvalues.yaml mybunkerweb bunkerweb/bunkerweb
 ```
 
 ## Values
