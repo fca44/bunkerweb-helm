@@ -8,15 +8,16 @@ nodeSelector: {}
 # Settings related to BW in a k8s environment
 settings:
   # Specify the name of an existing secret containing the values of certain sensitive parameters listed here with their corresponding keys :
-  # databaseUri : database-uri
-  # redisUsername : redis-username
-  # redisPassword : redis-password
-  # adminUsername : admin-username
-  # adminPassword : admin-password
-  # flaskSecret: flask-secret
-  # totpSecrets: totp-secrets
-  # mariadb.user : mariadb-user
-  # mariadb.password : mariadb-password
+  # settings.misc.databaseUri : database-uri
+  # settings.redis.redisUsername : redis-username
+  # settings.redis.redisPassword : redis-password
+  # settings.ui.adminUsername : admin-username
+  # settings.ui.adminPassword : admin-password
+  # settings.ui.flaskSecret: flask-secret
+  # settings.ui.totpSecrets: totp-secrets
+  # redis.config.password : redis-password
+  # mariadb.config.user : mariadb-user
+  # mariadb.config.password : mariadb-password
   existingSecret: ""
   kubernetes:
     namespaces: ""
