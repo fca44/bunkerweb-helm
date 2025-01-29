@@ -1,4 +1,4 @@
-WTF shown here ?
+TODO - edit notes
 
 {{/*1. Get the application URL by running these commands:
 {{- if .Values.ingress.enabled }}
