@@ -1,0 +1,35 @@
+{{- if .Values.settings.ui.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ui-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+  annotations:
+    bunkerweb.io/SERVE_FILES: "no"
+    bunkerweb.io/USE_UI: "yes"
+    bunkerweb.io/INTERCEPTED_ERROR_CODES: '400 404 405 413 429 500 501 502 503 504'
+    bunkerweb.io/MAX_CLIENT_SIZE: '50m'
+    {{- with .Values.settings.ui.ingress.extraAnnotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.settings.ui.ingress.tlsSecretName }}
+  tls:
+    - hosts:
+      - {{ .Values.settings.ui.ingress.serverName }}
+      secretName: {{ .Values.settings.ui.ingress.tlsSecretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.settings.ui.ingress.serverName }}
+      http:
+        paths:
+          - path: {{ .Values.settings.ui.ingress.serverPath }}
+            pathType: Prefix
+            backend:
+              service:
+                name: ui-{{ include "bunkerweb.fullname" . }}
+                port:
+                  number: 7000
+{{- end }}

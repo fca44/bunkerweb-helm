@@ -34,6 +34,12 @@ settings:
     redisPassword: ""
   ui:
     wizard: true
+    ingress:
+      enabled: false
+      serverName: ""
+      serverPath: "/"
+      extraAnnotations: {}
+      tlsSecretName: ""
     adminUsername: ""
     adminPassword: ""
     overrideAdminCreds: "no"
