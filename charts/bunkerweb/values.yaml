@@ -57,7 +57,7 @@ service:
 bunkerweb:
   repository: bunkerity/bunkerweb
   pullPolicy: Always
-  tag: 1.6.0
+  tag: 1.6.1
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -89,7 +89,7 @@ bunkerweb:
 scheduler:
   repository: bunkerity/bunkerweb-scheduler
   pullPolicy: Always
-  tag: 1.6.0
+  tag: 1.6.1
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -106,7 +106,7 @@ scheduler:
 controller:
   repository: bunkerity/bunkerweb-autoconf
   pullPolicy: Always
-  tag: 1.6.0
+  tag: 1.6.1
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -123,7 +123,7 @@ ui:
   enabled: true
   repository: bunkerity/bunkerweb-ui
   pullPolicy: Always
-  tag: 1.6.0
+  tag: 1.6.1
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -147,6 +147,7 @@ mariadb:
     database: "db"
     user: "bunkerweb"
     password: "changeme"
+  args: []
 
 # Redis variables
 redis:
