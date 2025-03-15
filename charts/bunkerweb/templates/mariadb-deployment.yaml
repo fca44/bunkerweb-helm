@@ -20,6 +20,10 @@ spec:
         - name: mariadb
           image: mariadb:11
           imagePullPolicy: Always
+          {{- if .Values.mariadb.args }}
+          args:
+            {{- toYaml .Values.mariadb.args | indent 12 }}
+          {{- end }}
           env:
             - name: MARIADB_RANDOM_ROOT_PASSWORD
               value: "{{ .Values.mariadb.config.randomRootPassword }}"
