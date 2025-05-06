@@ -104,6 +104,7 @@ scheduler:
 
 # Controller variables
 controller:
+  enabled: true
   repository: bunkerity/bunkerweb-autoconf
   pullPolicy: Always
   tag: 1.6.1
