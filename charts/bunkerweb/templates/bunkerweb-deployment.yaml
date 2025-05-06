@@ -1,12 +1,13 @@
-{{- if eq (.Values.bunkerweb.kind | default "DaemonSet") "DaemonSet" }}
+{{- if eq (.Values.bunkerweb.kind | default "Deployment") "Deployment" }}
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: {{ include "bunkerweb.fullname" . }}
   namespace: {{ include "bunkerweb.namespace" . }}
   labels:
     {{- include "bunkerweb.labels" . | nindent 4 }}
 spec:
+  replicas: {{ .Values.bunkerweb.replicas | default 1 }}
   selector:
     matchLabels:
       {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
@@ -36,13 +37,7 @@ spec:
           {{- end }}
           ports:
             - containerPort: 8080
-              {{- if .Values.bunkerweb.hostPorts }}
-              hostPort: 80
-              {{- end }}
             - containerPort: 8443
-              {{- if .Values.bunkerweb.hostPorts }}
-              hostPort: 443
-              {{- end }}
           env:
             # Mandatory for k8s integration
             - name: KUBERNETES_MODE

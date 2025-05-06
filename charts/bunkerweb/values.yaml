@@ -55,6 +55,9 @@ service:
 
 # BunkerWeb variables
 bunkerweb:
+  kind: DaemonSet
+  hostPorts: true
+  replicas: 1
   repository: bunkerity/bunkerweb
   pullPolicy: Always
   tag: 1.6.1
