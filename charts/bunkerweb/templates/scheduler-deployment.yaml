@@ -52,7 +52,7 @@ spec:
             - name: API_WHITELIST_IP
               value: "{{ .Values.settings.misc.apiWhitelistIp }}"
             - name: BUNKERWEB_INSTANCES
-              value: {{ .Values.scheduler.extraEnvs.BUNKERWEB_INSTANCES | default "" }}
+              value: {{- if .Values.scheduler.extraEnvs | not | empty }}{{ .Values.scheduler.extraEnvs.BUNKERWEB_INSTANCES | default "" }}{{- else }}""{{- end }}
             {{- if .Values.settings.ui.wizard }}
             - name: UI_HOST
               value: "{{ include "bunkerweb.uiHost" . }}"
