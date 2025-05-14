@@ -168,20 +168,76 @@ ingressClass:
 
 # Prometheus variables
 prometheus:
-  enabled: true
+  enabled: false
   repository: prom/prometheus
   pullPolicy: Always
-  tag: 3.3.1
+  tag: v3.3.1
   replicas: 1
   podAnnotations: {}
   podLabels: {}
-  securityContext: {}
-  # runAsUser: 65534
-    # fsGroup: 65534
+  securityContext:
+    fsGroup: 65534
   persistence:
     enabled: true
     size: 8Gi
-    storageClass: "" # Specify a storage class or leave empty for default
-    # accessModes:
-    #   - ReadWriteOnce
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+
+# Grafana variables
+grafana:
+  enabled: false
+  repository: grafana/grafana
+  tag: latest
+  pullPolicy: IfNotPresent
+  replicas: 1
+  adminUser: admin
+  adminPassword: "" # Leave empty to generate a random password
+  # existingSecret: "" # or use an existing secret for the password
+  service:
+    type: ClusterIP
+    port: 3000
+  ingress:
+    enabled: false
+    # className: ""
     # annotations: {}
+    #   # kubernetes.io/ingress.class: nginx
+    #   # kubernetes.io/tls-acme: "true"
+    # hosts:
+    #   - host: chart-example.local
+    #     paths:
+    #       - path: /
+    #         pathType: ImplementationSpecific
+    # tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+  persistence:
+    enabled: false
+    size: 10Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    # annotations: {}
+    
+  # Config for Prometheus data source
+  prometheusDatasource:
+    name: Prometheus
+    type: prometheus
+    url: "http://prometheus-{{ include \"bunkerweb.fullname\" . }}.{{ include \"bunkerweb.namespace\" . }}.svc:9090" # URL du service Prometheus
+    access: proxy
+    isDefault: true
+  podAnnotations: {}
+  podLabels: {}
+  securityContext: {}
+    # fsGroup: 472
+    # runAsUser: 472
+    # runAsGroup: 472
+  # extraEnvs: []
+  # sidecar:
+  #   dashboards:
+  #     enabled: false
+  #     label: grafana_dashboard
+  #     labelValue: "1"
+  #     folder: /tmp/dashboards
+  #     # Vous pouvez ajouter d'autres configurations pour le sidecar ici

@@ -1,0 +1,15 @@
+{{- if .Values.grafana.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "grafana-dashboards-%s" (include "bunkerweb.fullname" .) }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  dashboard-provider.yaml: |-
+{{ .Files.Get "files/grafana/default.yml" | indent 4 }}
+  bunkerweb-20755.json: |-
+{{ .Files.Get "files/grafana/bunkerweb-20755.json" | indent 4 }}
+{{- end -}}
