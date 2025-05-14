@@ -71,7 +71,7 @@ spec:
             - name: grafana-datasources
               mountPath: /etc/grafana/provisioning/datasources
             - name: grafana-dashboards
-              mountPath: /etc/grafana/provisioning/dashboards
+              mountPath: /var/lib/grafana/dashboards
           readinessProbe:
             httpGet:
               path: /api/health
