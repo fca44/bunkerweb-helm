@@ -103,6 +103,7 @@ scheduler:
       drop:
         - ALL
   extraEnvs: []
+  proLicenseKey: "" 
   # todo : probes
 
 # Controller variables
@@ -164,3 +165,23 @@ ingressClass:
   enabled: true
   name: "bunkerweb"
   controller: "bunkerweb.io/ingress-controller"
+
+# Prometheus variables
+prometheus:
+  enabled: true
+  repository: prom/prometheus
+  pullPolicy: Always
+  tag: 3.3.1
+  replicas: 1
+  podAnnotations: {}
+  podLabels: {}
+  securityContext: {}
+  # runAsUser: 65534
+    # fsGroup: 65534
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: "" # Specify a storage class or leave empty for default
+    # accessModes:
+    #   - ReadWriteOnce
+    # annotations: {}
