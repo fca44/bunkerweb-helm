@@ -72,6 +72,8 @@ spec:
               mountPath: /etc/grafana/provisioning/datasources
             - name: grafana-dashboards
               mountPath: /var/lib/grafana/dashboards
+            - name: grafana-dashboards-provider
+              mountPath: /etc/grafana/provisioning/dashboards
           readinessProbe:
             httpGet:
               path: /api/health
@@ -95,6 +97,15 @@ spec:
         - name: grafana-dashboards
           configMap:
             name: grafana-dashboards-{{ include "bunkerweb.fullname" . }}
+            items:
+              - key: bunkerweb-20755.json
+                path: bunkerweb-20755.json
+        - name: grafana-dashboards-provider
+          configMap:
+            name: grafana-dashboards-{{ include "bunkerweb.fullname" . }}
+            items:
+              - key: dashboard-provider.yaml
+                path: dashboard-provider.yaml
         - name: grafana-storage
           {{- if .Values.grafana.persistence.enabled }}
           persistentVolumeClaim:
