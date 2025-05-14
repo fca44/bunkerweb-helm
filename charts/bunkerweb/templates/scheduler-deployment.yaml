@@ -67,6 +67,16 @@ spec:
             - name: UI_HOST
               value: "{{ include "bunkerweb.uiHost" . }}"
             {{- end }}
+            {{- if .Values.prometheus.enabled }}
+            - name: USE_PROMETHEUS_EXPORTER
+              value: "yes"
+            - name: USE_MONITORING
+              value: "yes"
+            {{- end }}
+            {{- if .Values.scheduler.proLicenseKey }}
+            - name: PRO_LICENSE_KEY
+              value: {{ .Values.scheduler.proLicenseKey | quote }}
+            {{- end }}
             {{- include "bunkerweb.redisEnv" . | nindent 12 }}
             {{- if .Values.scheduler.extraEnvs }}
               {{- toYaml .Values.scheduler.extraEnvs | nindent 12 }}
