@@ -22,7 +22,6 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       annotations:
-        checksum/config: {{ include (print .Template.BasePath "/grafana-configmap.yaml") . | sha256sum }}
         {{- with .Values.grafana.podAnnotations }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
@@ -57,6 +56,8 @@ spec:
               value: /var/lib/grafana/plugins
             - name: GF_PATHS_PROVISIONING
               value: /etc/grafana/provisioning
+            - name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH
+              value: /var/lib/grafana/dashboards/bunkerweb-20755.json
             {{- if .Values.grafana.extraEnvs }}
             {{- toYaml .Values.grafana.extraEnvs | nindent 12 }}
             {{- end }}
