@@ -50,7 +50,13 @@ spec:
             - containerPort: 3100
           securityContext:
             fsGroup: {{ .Values.loki.securityContext.fsGroup | default 10001 }}
-            {{- if .Values.loki.securityContext.runAsUser }}
+            {{- if hasKey .Values.loki.securityContext "runAsNonRoot" }}
+            runAsNonRoot: {{ .Values.loki.securityContext.runAsNonRoot }}
+            {{- end }}
+            {{- if hasKey .Values.loki.securityContext "runAsGroup" }}
+            runAsGroup: {{ .Values.loki.securityContext.runAsGroup }}
+            {{- end }}
+            {{- if hasKey .Values.loki.securityContext "runAsUser" }}
             runAsUser: {{ .Values.loki.securityContext.runAsUser }}
             {{- end }}
           volumeMounts:
