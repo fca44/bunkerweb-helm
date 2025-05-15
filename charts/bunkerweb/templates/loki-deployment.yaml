@@ -44,6 +44,11 @@ spec:
             - -config.file=/etc/loki/loki-config.yaml
           ports:
             - containerPort: 3100
+          securityContext:
+            fsGroup: {{ .Values.loki.securityContext.fsGroup | default 10001 }}
+            {{- if .Values.loki.securityContext.runAsUser }}
+            runAsUser: {{ .Values.loki.securityContext.runAsUser }}
+            {{- end }}
           volumeMounts:
             - name: config
               mountPath: /etc/loki
