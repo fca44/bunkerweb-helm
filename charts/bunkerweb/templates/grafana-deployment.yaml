@@ -100,6 +100,8 @@ spec:
             items:
               - key: bunkerweb-20755.json
                 path: bunkerweb-20755.json
+              - key: logs-15141.json
+                path: logs-15141.json
         - name: grafana-dashboards-provider
           configMap:
             name: grafana-dashboards-{{ include "bunkerweb.fullname" . }}

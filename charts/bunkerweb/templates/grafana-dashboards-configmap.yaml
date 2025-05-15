@@ -12,4 +12,6 @@ data:
 {{ .Files.Get "files/grafana/default.yml" | indent 4 }}
   bunkerweb-20755.json: |-
 {{ .Files.Get "files/grafana/bunkerweb-20755.json" | indent 4 }}
+  logs-15141.json: |-
+{{ .Files.Get "files/grafana/logs-15141.json" | indent 4 }}
 {{- end -}}
