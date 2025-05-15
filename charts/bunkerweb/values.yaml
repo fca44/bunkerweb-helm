@@ -256,7 +256,7 @@ loki:
       - ReadWriteOnce
   retentionPeriod: 168h
   securityContext:
-    fsGroup: 65534
+    fsGroup: 10001
   podAnnotations: {}
   podLabels: {}
   # extraEnvs: []
