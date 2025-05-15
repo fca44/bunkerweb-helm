@@ -6,6 +6,8 @@ metadata:
   labels:
     {{- include "bunkerweb.labels" . | nindent 4 }}
 spec:
+  securityContext:
+    fsGroup: 65534
   replicas: 1
   selector:
     matchLabels:
