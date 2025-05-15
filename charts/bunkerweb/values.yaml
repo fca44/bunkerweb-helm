@@ -259,6 +259,9 @@ loki:
     fsGroup: 10001
   podAnnotations: {}
   podLabels: {}
+  # initContainer to fix-permissions (recommended)
+  fixPermissionsInitContainer:
+    enabled: true
   # extraEnvs: []
 
 # Promtail variables
