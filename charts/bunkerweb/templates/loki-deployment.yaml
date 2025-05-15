@@ -34,7 +34,7 @@ spec:
             - >-
               id;
               ls -la /data/;
-              mkdir -p /data/loki/index /data/loki/cache /data/loki/chunks;
+              mkdir -p /data/loki/index /data/loki/cache /data/loki/chunks /data/loki/compactor;
               chown -R 10001:10001 /data/loki
           volumeMounts:
             - name: data
