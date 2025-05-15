@@ -63,7 +63,7 @@ spec:
             - name: config
               mountPath: /etc/loki
             - name: data
-              mountPath: /data/loki
+              mountPath: /data
       volumes:
         - name: config
           configMap:
