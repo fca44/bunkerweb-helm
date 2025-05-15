@@ -7,7 +7,7 @@ metadata:
     {{- include "bunkerweb.labels" . | nindent 4 }}
 spec:
   securityContext:
-    fsGroup: 65534
+    fsGroup: {{ .Values.loki.securityContext.fsGroup | default 10001 }}
   replicas: 1
   selector:
     matchLabels:
@@ -21,7 +21,8 @@ spec:
     spec:
       containers:
         - name: loki
-          image: grafana/loki:2.9.3
+          image: {{ .Values.loki.repository }}:{{ .Values.loki.tag }}
+          imagePullPolicy: {{ .Values.loki.pullPolicy }}
           args:
             - -config.file=/etc/loki/loki-config.yaml
           ports:

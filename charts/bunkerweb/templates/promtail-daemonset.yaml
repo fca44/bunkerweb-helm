@@ -18,7 +18,8 @@ spec:
     spec:
       containers:
         - name: promtail
-          image: grafana/promtail:2.9.3
+          image: {{ .Values.promtail.repository }}:{{ .Values.promtail.tag }}
+          imagePullPolicy: {{ .Values.promtail.pullPolicy }}
           args:
             - -config.file=/etc/promtail/promtail.yaml
           volumeMounts:
