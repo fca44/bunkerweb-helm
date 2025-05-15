@@ -19,7 +19,6 @@ data:
         final_sleep: 0s
       chunk_idle_period: 5m
       chunk_retain_period: 30s
-      max_transfer_retries: 0
     schema_config:
       configs:
         - from: 2020-10-24
@@ -33,15 +32,11 @@ data:
       boltdb_shipper:
         active_index_directory: /data/loki/index
         cache_location: /data/loki/cache
-        shared_store: filesystem
       filesystem:
         directory: /data/loki/chunks
     limits_config:
-      enforce_metric_name: false
       reject_old_samples: true
       reject_old_samples_max_age: 168h
-    chunk_store_config:
-      max_look_back_period: 0s
     table_manager:
       retention_deletes_enabled: true
       retention_period: {{ .Values.loki.retentionPeriod | quote }}

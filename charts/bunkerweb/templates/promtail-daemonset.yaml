@@ -16,6 +16,7 @@ spec:
         app.kubernetes.io/name: promtail
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+      serviceAccountName: {{ .Values.promtail.serviceAccount.name | default (printf "promtail-sa-%s" (include "bunkerweb.fullname" .)) }}
       containers:
         - name: promtail
           image: {{ .Values.promtail.repository }}:{{ .Values.promtail.tag }}
