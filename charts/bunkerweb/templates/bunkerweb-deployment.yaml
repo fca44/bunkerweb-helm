@@ -38,6 +38,8 @@ spec:
           ports:
             - containerPort: 8080
             - containerPort: 8443
+            - containerPort: 9113
+              name: metrics
           env:
             # Mandatory for k8s integration
             - name: KUBERNETES_MODE
