@@ -246,7 +246,7 @@ grafana:
 loki:
   enabled: false
   repository: grafana/loki
-  tag: 3.5
+  tag: 2.9.3
   pullPolicy: IfNotPresent
   persistence:
     enabled: true
@@ -269,6 +269,8 @@ promtail:
   pullPolicy: IfNotPresent
   podAnnotations: {}
   podLabels: {}
-  securityContext: {}
+  serviceAccount:
+    create: true
+    name: ""
   # extraEnvs: []
   # scrapeConfigs: [] # Personnalisation avancée possible
