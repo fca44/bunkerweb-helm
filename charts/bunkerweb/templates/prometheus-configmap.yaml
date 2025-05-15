@@ -8,5 +8,3 @@ metadata:
 data:
   prometheus.yml: |-
     {{- .Files.Get "files/prometheus.yml" | nindent 4 }}
-  datasource.yml: |-
-    {{- .Files.Get "files/datasource.yml" | nindent 4 }}

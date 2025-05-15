@@ -32,9 +32,9 @@ scrape_configs:
     enable_http2: true
     static_configs:
       - targets:
-          - prometheus:9090 # This is the Prometheus container
+          - prometheus-{{ include "bunkerweb.fullname" . }}.{{ include "bunkerweb.namespace" . }}.svc.cluster.local:9090
   - job_name: bunkerweb
     metrics_path: /metrics # This is the default path for the exporter
     static_configs:
       - targets:
-          - bunkerweb-metrics:9113 # Utilise le service dédié pour l'exporter
+          - {{ include "bunkerweb.fullname" . }}-metrics.{{ include "bunkerweb.namespace" . }}.svc.cluster.local:9113
