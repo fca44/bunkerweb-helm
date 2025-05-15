@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  ports:
+    - name: http
+      port: 3100
+      targetPort: 3100
+  selector:
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/instance: {{ .Release.Name }}

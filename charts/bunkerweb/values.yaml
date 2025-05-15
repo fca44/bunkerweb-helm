@@ -103,7 +103,7 @@ scheduler:
       drop:
         - ALL
   extraEnvs: []
-  proLicenseKey: "" 
+  proLicenseKey: ""
   # todo : probes
 
 # Controller variables
@@ -219,17 +219,18 @@ grafana:
     accessModes:
       - ReadWriteOnce
     # annotations: {}
-    
+
   # Config for Prometheus data source
   prometheusDatasource:
     name: Prometheus
     type: prometheus
-    url: "http://prometheus-{{ include \"bunkerweb.fullname\" . }}.{{ include \"bunkerweb.namespace\" . }}.svc:9090" # URL du service Prometheus
+    url: 'http://prometheus-{{ include "bunkerweb.fullname" . }}.{{ include "bunkerweb.namespace" . }}.svc:9090' # URL du service Prometheus
     access: proxy
     isDefault: true
   podAnnotations: {}
   podLabels: {}
-  securityContext: {}
+  securityContext:
+    {}
     # fsGroup: 472
     # runAsUser: 472
     # runAsGroup: 472
@@ -240,4 +241,33 @@ grafana:
   #     label: grafana_dashboard
   #     labelValue: "1"
   #     folder: /tmp/dashboards
-  #     # Vous pouvez ajouter d'autres configurations pour le sidecar ici
+
+# Loki variables
+loki:
+  enabled: false
+  repository: grafana/loki
+  tag: 3.5
+  pullPolicy: IfNotPresent
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+  retentionPeriod: 168h
+  podAnnotations: {}
+  podLabels: {}
+  securityContext: {}
+  # extraEnvs: []
+
+# Promtail variables
+promtail:
+  enabled: false
+  repository: grafana/promtail
+  tag: 3.5
+  pullPolicy: IfNotPresent
+  podAnnotations: {}
+  podLabels: {}
+  securityContext: {}
+  # extraEnvs: []
+  # scrapeConfigs: [] # Personnalisation avancée possible
