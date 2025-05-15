@@ -255,9 +255,10 @@ loki:
     accessModes:
       - ReadWriteOnce
   retentionPeriod: 168h
+  securityContext:
+    fsGroup: 65534
   podAnnotations: {}
   podLabels: {}
-  securityContext: {}
   # extraEnvs: []
 
 # Promtail variables
