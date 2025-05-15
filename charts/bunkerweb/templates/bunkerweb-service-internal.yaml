@@ -9,3 +9,23 @@ spec:
   clusterIP: None
   selector:
     bunkerweb.io/component: "bunkerweb"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "bunkerweb.fullname" . }}-metrics
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+    bunkerweb.io/component: "bunkerweb-metrics"
+spec:
+  type: ClusterIP
+  selector:
+    bunkerweb.io/component: "bunkerweb"
+  ports:
+    - name: metrics
+      protocol: TCP
+      port: 9113
+      targetPort: 9113
