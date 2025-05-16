@@ -15,6 +15,8 @@ data:
         ring:
           kvstore:
             store: inmemory
+        interface_names:
+          - eth0
         final_sleep: 0s
       chunk_idle_period: 5m
       chunk_retain_period: 30s
