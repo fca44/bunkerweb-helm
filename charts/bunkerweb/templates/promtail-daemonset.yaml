@@ -23,6 +23,7 @@ spec:
           imagePullPolicy: {{ .Values.promtail.pullPolicy }}
           args:
             - -config.file=/etc/promtail/promtail.yaml
+            - -log.level=debug
           volumeMounts:
             - name: config
               mountPath: /etc/promtail
