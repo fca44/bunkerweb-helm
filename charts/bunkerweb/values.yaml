@@ -4,6 +4,7 @@ nameOverride: ""
 namespaceOverride: ""
 fullnameOverride: ""
 nodeSelector: {}
+tolerations: []
 
 # Settings related to BW in a k8s environment
 settings:
@@ -59,8 +60,13 @@ bunkerweb:
   hostPorts: true
   replicas: 1
   repository: bunkerity/bunkerweb
-  pullPolicy: Always
   tag: 1.6.1
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAntiAffinityPreset: 'soft'
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -87,12 +93,26 @@ bunkerweb:
     periodSeconds: 1
     timeoutSeconds: 1
     failureThreshold: 3
+  ## PodDisruptionBudget for default backend
+  ## bunkerweb Pod Disruption Budget configuration
+  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  ## @param bunkerweb.pdb.create Enable Pod Disruption Budget configuration
+  ## @param bunkerweb.pdb.minAvailable Minimum number/percentage of Default backend pods that should remain scheduled
+  ## @param bunkerweb.pdb.maxUnavailable Maximum number/percentage of Default backend pods that should remain scheduled
+  ##
+  pdb:
+    create: true
+    minAvailable: ""
+    maxUnavailable: ""
 
 # Scheduler variables
 scheduler:
   repository: bunkerity/bunkerweb-scheduler
-  pullPolicy: Always
   tag: 1.6.1
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -110,8 +130,11 @@ scheduler:
 controller:
   enabled: true
   repository: bunkerity/bunkerweb-autoconf
-  pullPolicy: Always
   tag: 1.6.1
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -127,8 +150,11 @@ controller:
 ui:
   enabled: true
   repository: bunkerity/bunkerweb-ui
-  pullPolicy: Always
   tag: 1.6.1
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -140,10 +166,25 @@ ui:
         - ALL
   extraEnvs: []
   # todo : probes
+  logs:
+    enabled: false
+    repository: balabit/syslog-ng
+    pullPolicy: Always
+    tag: 4.8.0
+    persistence:
+      size: 5Gi
+      storageClass: ""
+
 
 # Database variables
 mariadb:
   enabled: true
+  repository: mariadb
+  tag: '11'
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   persistence:
     size: 5Gi
     storageClass: ""
@@ -157,6 +198,12 @@ mariadb:
 # Redis variables
 redis:
   enabled: true
+  repository: redis
+  tag: 7-alpine
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   config:
     password: "changeme"
 

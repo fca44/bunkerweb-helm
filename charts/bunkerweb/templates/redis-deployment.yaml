@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
         - name: redis
-          image: redis:7-alpine
-          imagePullPolicy: Always
+          image: {{ .Values.redis.repository }}:{{ .Values.redis.tag }}
+          imagePullPolicy:  {{ .Values.redis.pullPolicy }}
           command: ["redis-server"]
           args: ["--requirepass", "$(REDIS_PASSWORD)"]
           env:
@@ -32,8 +32,31 @@ spec:
               {{- else }}
               value: "{{ .Values.redis.config.password }}"
               {{- end }}
+    {{- if .Values.redis.nodeSelector }}
+      {{- with .Values.redis.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if .Values.nodeSelector }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    {{- end }}
+    {{- if or (.Values.redis.tolerations) (.Values.tolerations) }}
+      tolerations:
+      {{- if .Values.redis.tolerations }}
+        {{- toYaml .Values.redis.tolerations | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.tolerations | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- if or (.Values.redis.imagePullSecrets) (.Values.imagePullSecrets) }}
+      imagePullSecrets:
+      {{- if .Values.redis.imagePullSecrets }}
+        {{- toYaml .Values.redis.imagePullSecrets | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.imagePullSecrets | nindent 6 }}
+      {{- end }}
+    {{- end }}
 {{- end }}
