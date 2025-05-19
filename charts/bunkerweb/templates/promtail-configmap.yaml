@@ -43,4 +43,11 @@ data:
             labels:
               job: kubernetes-containers
               __path__: /var/log/containers/*.log
-      
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: {{ .Release.Namespace }}
+            action: keep
+          - source_labels: [__meta_kubernetes_pod_name]
+            regex: (scheduler-web-|ui-web-|web-).*
+            action: keep
+
