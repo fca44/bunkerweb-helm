@@ -50,4 +50,6 @@ data:
           - source_labels: [__meta_kubernetes_pod_name]
             regex: (scheduler-web-|ui-web-|web-).*
             action: keep
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
 
