@@ -24,12 +24,12 @@ data:
         relabel_configs:
           - source_labels: ['__meta_kubernetes_pod_node_name']
             target_label: '__host__'
-          - source_labels: [__meta_kubernetes_pod_name]
-            regex: (scheduler-web|ui-web|web).*
-            action: keep
-          - source_labels: [__meta_kubernetes_namespace]
-            regex: {{ include "bunkerweb.namespace" . }}
-            action: keep
+          # - source_labels: [__meta_kubernetes_pod_name]
+          #   regex: (scheduler-web|ui-web|web).*
+          #   action: keep
+          # - source_labels: [__meta_kubernetes_namespace]
+          #   regex: {{ include "bunkerweb.namespace" . }}
+          #   action: keep
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
           - source_labels: [__meta_kubernetes_pod_container_name]
