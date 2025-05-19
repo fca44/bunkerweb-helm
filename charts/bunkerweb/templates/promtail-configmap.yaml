@@ -22,6 +22,8 @@ data:
               names:
                 - {{ include "bunkerweb.namespace" . }}
         relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_pod_(.*)
           - source_labels: [__meta_kubernetes_pod_name, __meta_kubernetes_namespace, __meta_kubernetes_pod_container_name]
             separator: "_"
             target_label: __path__
