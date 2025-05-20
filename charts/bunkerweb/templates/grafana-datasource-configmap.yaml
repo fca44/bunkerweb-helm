@@ -21,14 +21,6 @@ data:
         url: http://prometheus-{{ include "bunkerweb.fullname" . }}.{{ include "bunkerweb.namespace" . }}.svc.cluster.local:9090
         editable: true
         uid: PBFA97CFB590B2093
-      - name: Loki
-        type: loki
-        access: proxy
-        url: http://loki-{{ include "bunkerweb.fullname" . }}.{{ include "bunkerweb.namespace" . }}.svc.cluster.local:3100
-        isDefault: false
-        uid: LOKI
-        jsonData:
-          maxLines: 1000
       - name: Loki-admin
         type: loki
         access: proxy
