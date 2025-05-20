@@ -241,39 +241,3 @@ grafana:
   #     label: grafana_dashboard
   #     labelValue: "1"
   #     folder: /tmp/dashboards
-
-# Loki variables
-loki:
-  enabled: false
-  repository: grafana/loki
-  tag: 2.9.3
-  pullPolicy: IfNotPresent
-  persistence:
-    enabled: true
-    size: 10Gi
-    storageClass: ""
-    accessModes:
-      - ReadWriteOnce
-  retentionPeriod: 168h
-  securityContext:
-    fsGroup: 10001
-  podAnnotations: {}
-  podLabels: {}
-  # initContainer to fix-permissions (recommended)
-  fixPermissionsInitContainer:
-    enabled: true
-  # extraEnvs: []
-
-# Promtail variables
-promtail:
-  enabled: false
-  repository: grafana/promtail
-  tag: 3.5
-  pullPolicy: IfNotPresent
-  podAnnotations: {}
-  podLabels: {}
-  serviceAccount:
-    create: true
-    name: ""
-  # extraEnvs: []
-  # scrapeConfigs: [] # Personnalisation avancée possible
