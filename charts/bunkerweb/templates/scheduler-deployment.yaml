@@ -67,7 +67,7 @@ spec:
             - name: UI_HOST
               value: "{{ include "bunkerweb.uiHost" . }}"
             {{- end }}
-            {{- if .Values.prometheus.enabled }}
+            {{- if .Values.scheduler.usePrometheusExporter }}
             - name: USE_PROMETHEUS_EXPORTER
               value: "yes"
             - name: USE_MONITORING

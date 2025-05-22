@@ -103,7 +103,9 @@ scheduler:
       drop:
         - ALL
   extraEnvs: []
+  # PRO Features only
   proLicenseKey: ""
+  usePrometheusExporter: false
   # todo : probes
 
 # Controller variables
