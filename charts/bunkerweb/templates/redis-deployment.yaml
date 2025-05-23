@@ -20,20 +20,22 @@ spec:
         - name: redis
           image: redis:7-alpine
           imagePullPolicy: Always
-          command: ["redis-server"]
-          args: ["--requirepass", "$(REDIS_PASSWORD)"]
-          env:
-            - name: REDIS_PASSWORD
-              {{- if not (empty .Values.settings.existingSecret) }}
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.settings.existingSecret }}"
-                  key: redis-password
-              {{- else }}
-              value: "{{ .Values.redis.config.password }}"
-              {{- end }}
+          command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+          volumeMounts:
+          - name: redis-config
+            mountPath: /usr/local/etc/redis/
+            readOnly: true
+          - name: redis-data
+            mountPath: /data
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config-{{ include "bunkerweb.fullname" . }}
+      - name: redis-data
+        persistentVolumeClaim:
+          claimName: redis-{{ include "bunkerweb.fullname" . }}
 {{- end }}

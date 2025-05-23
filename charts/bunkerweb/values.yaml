@@ -137,6 +137,7 @@ ui:
   # todo : probes
 
 # Database variables
+# Enable the mariadb service to persist the installation
 mariadb:
   enabled: true
   persistence:
@@ -150,8 +151,13 @@ mariadb:
   args: []
 
 # Redis variables
+# Enable the redis service to persist the banned ips
+# Find futher information: https://docs.bunkerweb.io/latest/advanced/#persistence-of-bans-and-reports
 redis:
   enabled: true
+  persistence:
+    size: 1Gi
+    storageClass: ""
   config:
     password: "changeme"
 
