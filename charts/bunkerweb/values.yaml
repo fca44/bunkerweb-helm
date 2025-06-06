@@ -4,6 +4,7 @@ nameOverride: ""
 namespaceOverride: ""
 fullnameOverride: ""
 nodeSelector: {}
+topologySpreadConstraints: []
 
 # Settings related to BW in a k8s environment
 settings:
