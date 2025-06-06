@@ -50,7 +50,6 @@ spec:
           configMap:
             name: redis-config-{{ include "bunkerweb.fullname" . }}
       {{- end }}
-      {{- if .Values.redis.podAnnotations }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
