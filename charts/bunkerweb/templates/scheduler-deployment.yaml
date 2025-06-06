@@ -26,6 +26,10 @@ spec:
         - name: bunkerweb-scheduler
           image: {{ .Values.scheduler.repository }}:{{ .Values.scheduler.tag }}
           imagePullPolicy: {{ .Values.scheduler.pullPolicy }}
+          {{- with .Values.scheduler.resources }}
+          resources:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           {{- with .Values.scheduler.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12}}

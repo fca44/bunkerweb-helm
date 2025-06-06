@@ -26,6 +26,10 @@ spec:
         - name: bunkerweb-ui
           image: {{ .Values.ui.repository }}:{{ .Values.ui.tag }}
           imagePullPolicy: {{ .Values.ui.pullPolicy }}
+          {{- with .Values.ui.resources }}
+          resources:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           {{- with .Values.ui.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12}}

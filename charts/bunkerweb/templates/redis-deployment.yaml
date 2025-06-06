@@ -20,6 +20,10 @@ spec:
         - name: redis
           image: redis:7-alpine
           imagePullPolicy: Always
+          {{- with .Values.redis.resources }}
+          resources:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           command: ["redis-server"]
           args: ["--requirepass", "$(REDIS_PASSWORD)"]
           env:
