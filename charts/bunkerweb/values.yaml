@@ -59,7 +59,7 @@ service:
 bunkerweb:
   kind: DaemonSet
   bunkerweb:
-  enableInstance: true # ou false selon vos besoins
+  enableInstance: true # Pod annotations, required for k8s integration, or/and when using the controller
   hostPorts: true
   replicas: 1
   repository: bunkerity/bunkerweb
