@@ -15,10 +15,12 @@ spec:
   template:
     metadata:
       annotations:
+        {{- if .Values.bunkerweb.enableInstance | default true }}
         bunkerweb.io/INSTANCE: "yes"
-      {{- with .Values.bunkerweb.podAnnotations }}
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
+        {{- with .Values.bunkerweb.podAnnotations }}
+            {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels:
         {{- include "bunkerweb.labels" . | nindent 8 }}
         {{- with .Values.bunkerweb.podLabels }}

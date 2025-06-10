@@ -58,6 +58,8 @@ service:
 # BunkerWeb variables
 bunkerweb:
   kind: DaemonSet
+  bunkerweb:
+  enableInstance: true # ou false selon vos besoins
   hostPorts: true
   replicas: 1
   repository: bunkerity/bunkerweb
