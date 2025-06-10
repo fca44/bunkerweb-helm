@@ -1,0 +1,72 @@
+{{- if eq .Values.bunkerweb.kind "StatefulSet" }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "bunkerweb.fullname" . }}-internal
+  replicas: {{ .Values.bunkerweb.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        bunkerweb.io/INSTANCE: "yes"
+      {{- with .Values.bunkerweb.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "bunkerweb.labels" . | nindent 8 }}
+        {{- with .Values.bunkerweb.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        bunkerweb.io/component: "bunkerweb"
+    spec:
+      containers:
+        - name: bunkerweb
+          image: {{ .Values.bunkerweb.repository }}:{{ .Values.bunkerweb.tag }}
+          imagePullPolicy: {{ .Values.bunkerweb.pullPolicy }}
+          {{- with .Values.bunkerweb.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.bunkerweb.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: 8080
+            - containerPort: 8443
+            - containerPort: 9113
+              name: metrics
+          env:
+            - name: KUBERNETES_MODE
+              value: "yes"
+            - name: DNS_RESOLVERS
+              value: "{{ .Values.settings.misc.dnsResolvers }}"
+            - name: API_WHITELIST_IP
+              value: "{{ .Values.settings.misc.apiWhitelistIp }}"
+          {{- if .Values.bunkerweb.extraEnvs }}
+            {{- toYaml .Values.bunkerweb.extraEnvs | nindent 12 }}
+          {{- end }}
+          {{- with .Values.bunkerweb.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.bunkerweb.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
