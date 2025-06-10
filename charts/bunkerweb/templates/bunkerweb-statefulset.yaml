@@ -15,7 +15,7 @@ spec:
   template:
     metadata:
       annotations:
-        {{- if .Values.bunkerweb.enableInstance | default true }}
+        {{- if .Values.bunkerweb.enableInstance true }}
         bunkerweb.io/INSTANCE: "yes"
         {{- end }}
         {{- with .Values.bunkerweb.podAnnotations }}
