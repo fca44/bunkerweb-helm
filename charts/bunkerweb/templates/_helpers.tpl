@@ -84,6 +84,10 @@ DATABASE_URI setting
 REDIS settings
 */}}
 {{- define "bunkerweb.redisEnv" -}}
+  {{- if eq .Values.settings.redis.useRedis "yes" }}
+  - name: USE_REDIS
+    value: "yes"
+  {{- end }}
   {{- if .Values.redis.enabled }}
 - name: REDIS_HOST
   value: "redis-{{ include "bunkerweb.fullname" . }}"
