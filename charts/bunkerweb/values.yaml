@@ -124,10 +124,26 @@ scheduler:
       drop:
         - ALL
   extraEnvs: []
+  # Probes
+  livenessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-scheduler.sh
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 3
+  readinessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-scheduler.sh
+    initialDelaySeconds: 30
+    periodSeconds: 1
+    timeoutSeconds: 1
+    failureThreshold: 3
   # PRO Features only
   proLicenseKey: ""
   usePrometheusExporter: false
-  # todo : probes
 
 # Controller variables
 controller:
@@ -154,7 +170,23 @@ controller:
       drop:
         - ALL
   extraEnvs: []
-  # todo : probes
+  # probes
+  livenessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-autoconf.sh
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 3
+  readinessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-autoconf.sh
+    initialDelaySeconds: 30
+    periodSeconds: 1
+    timeoutSeconds: 1
+    failureThreshold: 3
 
 ui:
   enabled: true
@@ -180,7 +212,23 @@ ui:
       drop:
         - ALL
   extraEnvs: []
-  # todo : probes
+  # probes
+  livenessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-ui.sh
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 3
+  readinessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-ui.sh
+    initialDelaySeconds: 30
+    periodSeconds: 1
+    timeoutSeconds: 1
+    failureThreshold: 3
 
 # Database variables
 mariadb:

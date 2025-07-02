@@ -34,6 +34,14 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12}}
           {{- end }}
+          {{- with .Values.bunkerweb.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
+          {{- with .Values.bunkerweb.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           env:
             # Mandatory for k8s integration
             - name: KUBERNETES_MODE
