@@ -355,3 +355,13 @@ grafana:
   #     label: grafana_dashboard
   #     labelValue: "1"
   #     folder: /tmp/dashboards
+
+# Network Policy configuration
+networkPolicy:
+  enabled: false
+  egress:
+    allowInternet: true
+    internetPorts: [80, 443]
+    allowDatabaseVNet: true
+    databaseVNetCIDR: "10.0.0.0/16"
+    databasePort: 3306
