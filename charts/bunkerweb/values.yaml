@@ -125,22 +125,22 @@ scheduler:
         - ALL
   extraEnvs: []
   # Probes
-  livenessProbe:
-    exec:
-      command:
-        - /usr/share/bunkerweb/helpers/healthcheck-scheduler.sh
-    initialDelaySeconds: 30
-    periodSeconds: 5
-    timeoutSeconds: 1
-    failureThreshold: 3
-  readinessProbe:
-    exec:
-      command:
-        - /usr/share/bunkerweb/helpers/healthcheck-scheduler.sh
-    initialDelaySeconds: 30
-    periodSeconds: 1
-    timeoutSeconds: 1
-    failureThreshold: 3
+  # livenessProbe:
+  #   exec:
+  #     command:
+  #       - /usr/share/bunkerweb/helpers/healthcheck-scheduler.sh
+  #   initialDelaySeconds: 30
+  #   periodSeconds: 5
+  #   timeoutSeconds: 1
+  #   failureThreshold: 3
+  # readinessProbe:
+  #   exec:
+  #     command:
+  #       - /usr/share/bunkerweb/helpers/healthcheck-scheduler.sh
+  #   initialDelaySeconds: 30
+  #   periodSeconds: 1
+  #   timeoutSeconds: 1
+  #   failureThreshold: 3
   # PRO Features only
   proLicenseKey: ""
   usePrometheusExporter: false
