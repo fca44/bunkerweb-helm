@@ -1,3 +1,4 @@
+{{- if .Values.controller.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,6 +31,14 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12}}
           {{- end }}
+          {{- with .Values.controller.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
+          {{- with .Values.controller.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           env:
             # Mandatory for k8s integration
             - name: KUBERNETES_MODE
@@ -53,3 +62,4 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}
