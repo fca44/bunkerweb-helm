@@ -34,11 +34,11 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12}}
           {{- end }}
-          {{- with .Values.bunkerweb.livenessProbe }}
+          {{- with .Values.scheduler.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12}}
           {{- end }}
-          {{- with .Values.bunkerweb.readinessProbe }}
+          {{- with .Values.scheduler.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12}}
           {{- end }}
