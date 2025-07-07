@@ -90,6 +90,9 @@ REDIS settings
 {{- end }}
 {{- if .Values.redis.enabled }}
 - name: REDIS_HOST
+  {{- if .Values.settings.redis.redisHost }}
+  value: "{{ .Values.settings.redis.redisHost }}"
+  {{- else }}
   value: "redis-{{ include "bunkerweb.fullname" . }}"
 - name: REDIS_USERNAME
   value: ""
@@ -103,8 +106,6 @@ REDIS settings
   value: "{{ .Values.redis.config.password }}"
     {{- end }}
   {{- else }}
-- name: REDIS_HOST
-  value: "{{ .Values.settings.redis.redisHost }}"
 - name: REDIS_USERNAME
     {{- if not (empty .Values.settings.existingSecret) }}
   valueFrom:
