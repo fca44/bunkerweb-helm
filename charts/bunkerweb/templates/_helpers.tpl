@@ -98,15 +98,17 @@ REDIS settings
 - name: REDIS_USERNAME
   value: ""
 - name: REDIS_PASSWORD
-    {{- if not (empty .Values.settings.existingSecret) }}
+  {{- if not (empty .Values.settings.existingSecret) }}
   valueFrom:
     secretKeyRef:
       name: "{{ .Values.settings.existingSecret }}"
       key: redis-password
-    {{- else }}
-  value: "{{ .Values.redis.config.password }}"
-    {{- end }}
   {{- else }}
+  value: "{{ .Values.redis.config.password }}"
+  {{- end }}
+{{- else }}
+- name: REDIS_HOST
+  value: "{{ .Values.settings.redis.redisHost }}"
 - name: REDIS_USERNAME
     {{- if not (empty .Values.settings.existingSecret) }}
   valueFrom:
@@ -125,5 +127,5 @@ REDIS settings
     {{- else }}
   value: "{{ .Values.settings.redis.redisPassword }}"
     {{- end }}
-  {{- end }}
+{{- end }}
 {{- end }}
