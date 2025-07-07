@@ -133,14 +133,6 @@ scheduler:
     periodSeconds: 5
     timeoutSeconds: 1
     failureThreshold: 3
-  readinessProbe:
-    exec:
-      command:
-        - /usr/share/bunkerweb/helpers/healthcheck-scheduler.sh
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 10
-    failureThreshold: 6
   # PRO Features only
   proLicenseKey: ""
   usePrometheusExporter: false

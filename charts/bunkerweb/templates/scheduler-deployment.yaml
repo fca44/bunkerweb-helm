@@ -38,10 +38,6 @@ spec:
           livenessProbe:
             {{- toYaml . | nindent 12}}
           {{- end }}
-          {{- with .Values.scheduler.readinessProbe }}
-          readinessProbe:
-            {{- toYaml . | nindent 12}}
-          {{- end }}
           env:
             # Mandatory for k8s integration
             - name: KUBERNETES_MODE
