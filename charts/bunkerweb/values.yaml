@@ -63,7 +63,7 @@ bunkerweb:
   replicas: 1
   repository: bunkerity/bunkerweb
   pullPolicy: Always
-  tag: 1.6.2
+  tag: 1.6.4
   ## RECOMMENDED RESOURCES
   ## If you want to set resources for the bunkerweb, uncomment the following lines and adjust the values as needed.
   # resources:
@@ -104,7 +104,7 @@ bunkerweb:
 scheduler:
   repository: bunkerity/bunkerweb-scheduler
   pullPolicy: Always
-  tag: 1.6.2
+  tag: 1.6.4
   ## RECOMMENDED RESOURCES
   ## If you want to set resources for the Scheduler, uncomment the following lines and adjust the values as needed.
   # resources:
@@ -142,7 +142,7 @@ controller:
   enabled: true
   repository: bunkerity/bunkerweb-autoconf
   pullPolicy: Always
-  tag: 1.6.2
+  tag: 1.6.4
   ## RECOMMENDED RESOURCES
   ## If you want to set resources for the Controller, uncomment the following lines and adjust the values as needed.
   # resources:
@@ -184,7 +184,7 @@ ui:
   enabled: true
   repository: bunkerity/bunkerweb-ui
   pullPolicy: Always
-  tag: 1.6.2
+  tag: 1.6.4
   ## RECOMMENDED RESOURCES
   ## If you want to set resources for the UI, uncomment the following lines and adjust the values as needed.
   # resources:
