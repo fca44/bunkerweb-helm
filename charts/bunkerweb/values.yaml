@@ -352,6 +352,7 @@ grafana:
 networkPolicy:
   enabled: false
   egress:
+    allowSameNamespace: true
     allowInternet: true
     internetPorts: [80, 443]
     allowDatabaseVNet: true

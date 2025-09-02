@@ -20,6 +20,13 @@ spec:
           port: 53
         - protocol: TCP
           port: 53
+
+    # Allow intra-namespace communication
+    {{- if .Values.networkPolicy.egress.allowSameNamespace }}
+    - to:
+        - podSelector: {}
+    {{- end }}
+    
     # Allow access to MySQL on VNet
     {{- if .Values.networkPolicy.egress.allowDatabaseVNet }}
     - to:
