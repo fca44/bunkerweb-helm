@@ -28,6 +28,30 @@ spec:
         {{- end }}
         bunkerweb.io/component: "bunkerweb"
     spec:
+    {{- with .Values.bunkerweb.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8}}
+    {{- end }}
+      {{- if not .Values.bunkerweb.affinity}}
+      affinity:
+      {{- end }}
+      {{- if eq .Values.bunkerweb.podAntiAffinityPreset "hard" }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  bunkerweb.io/component: "bunkerweb"
+      {{- else if eq .Values.bunkerweb.podAntiAffinityPreset "soft" }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  bunkerweb.io/component: "bunkerweb"
+      {{- end }}
       containers:
         # using bunkerweb as name is mandatory
         - name: bunkerweb
@@ -67,10 +91,33 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12}}
           {{- end }}
+    {{- if .Values.bunkerweb.nodeSelector }}
+      {{- with .Values.bunkerweb.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if .Values.nodeSelector }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    {{- end }}
+    {{- if or (.Values.bunkerweb.tolerations) (.Values.tolerations) }}
+      tolerations:
+      {{- if .Values.bunkerweb.tolerations }}
+        {{- toYaml .Values.bunkerweb.tolerations | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.tolerations | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- if or (.Values.bunkerweb.imagePullSecrets) (.Values.imagePullSecrets) }}
+      imagePullSecrets:
+      {{- if .Values.bunkerweb.imagePullSecrets }}
+        {{- toYaml .Values.bunkerweb.imagePullSecrets | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.imagePullSecrets | nindent 6 }}
+      {{- end }}
+    {{- end }}
       {{- with .Values.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
