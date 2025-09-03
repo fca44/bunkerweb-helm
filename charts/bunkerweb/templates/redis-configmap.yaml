@@ -6,6 +6,11 @@ metadata:
   namespace: {{ include "bunkerweb.namespace" . }}
   labels:
     {{- include "bunkerweb.labels" . | nindent 4 }}
+{{- if and .Values.redis.useConfigFile .Values.redis.config.file -}}
+data:
+  redis.conf: |
+    {{- .Values.redis.config.file | nindent 4 }}
+{{- else if .Values.redis.useConfigFile -}}
 data:
   redis.conf: |
     # Basic Redis configuration for bunkerized-nginx

@@ -1,0 +1,27 @@
+{{- if and .Values.grafana.enabled .Values.grafana.persistence.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-data-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+  {{- with .Values.grafana.persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml .Values.grafana.persistence.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.grafana.persistence.size | quote }}
+  {{- if .Values.grafana.persistence.storageClass }}
+  {{- if (eq "-" .Values.grafana.persistence.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.grafana.persistence.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}

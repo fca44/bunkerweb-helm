@@ -1,0 +1,32 @@
+{{- if .Values.grafana.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+    app.kubernetes.io/component: grafana
+data:
+  datasource.yaml: |-
+    apiVersion: 1
+    deleteDatasources:
+      - name: Prometheus-BW
+        orgId: 1
+    datasources:
+      - name: Prometheus-BW
+        type: prometheus
+        access: proxy
+        orgId: 1
+        url: http://prometheus-{{ include "bunkerweb.fullname" . }}.{{ include "bunkerweb.namespace" . }}.svc.cluster.local:9090
+        editable: true
+        uid: PBFA97CFB590B2093
+      - name: Loki-admin
+        type: loki
+        access: proxy
+        url: http://loki.monitoring.svc.cluster.local:3100
+        isDefault: false
+        uid: LOKIADMIN
+        jsonData:
+          maxLines: 1000
+{{- end -}}

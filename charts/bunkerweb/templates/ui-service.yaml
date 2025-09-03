@@ -1,4 +1,4 @@
-{{- if .Values.ingressClass.enabled -}}
+{{- if .Values.ui.enabled -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -15,4 +15,10 @@ spec:
       protocol: TCP
       port: 7000
       targetPort: 7000
+    {{- if .Values.ui.logs.enabled }}
+    - name: syslog
+      protocol: UDP
+      port: 514
+      targetPort: 514
+    {{- end }}
 {{- end }}

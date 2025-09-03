@@ -1,0 +1,20 @@
+{{- $replicaCount := int .Values.bunkerweb.replicaCount }}
+{{- if and .Values.bunkerweb.pdb.create  (gt $replicaCount 1) }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name:  {{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  {{- if .Values.bunkerweb.pdb.minAvailable }}
+  minAvailable: {{ .Values.bunkerweb.pdb.minAvailable }}
+  {{- end }}
+  {{- if or .Values.bunkerweb.pdb.maxUnavailable ( not .Values.bunkerweb.pdb.minAvailable ) }}
+  maxUnavailable: {{ .Values.bunkerweb.pdb.maxUnavailable | default 1 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      bunkerweb.io/component: "bunkerweb"
+{{- end }}

@@ -18,11 +18,15 @@ spec:
     spec:
       containers:
         - name: mariadb
-          image: mariadb:11
-          imagePullPolicy: Always
+          image: {{ .Values.mariadb.repository }}:{{ .Values.mariadb.tag }}
+          imagePullPolicy: {{ .Values.mariadb.pullPolicy }}
+          {{- with .Values.ui.resources }}
+          resources:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           {{- if .Values.mariadb.args }}
           args:
-            {{- toYaml .Values.mariadb.args | indent 12 }}
+            {{- toYaml .Values.mariadb.args | nindent 12 }}
           {{- end }}
           env:
             - name: MARIADB_RANDOM_ROOT_PASSWORD
@@ -54,8 +58,31 @@ spec:
         - name: vol-db
           persistentVolumeClaim:
             claimName: mariadb-{{ include "bunkerweb.fullname" . }}
+    {{- if .Values.mariadb.nodeSelector }}
+      {{- with .Values.mariadb.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if .Values.nodeSelector }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    {{- end }}
+    {{- if or (.Values.mariadb.tolerations) (.Values.tolerations) }}
+      tolerations:
+      {{- if .Values.mariadb.tolerations }}
+        {{- toYaml .Values.mariadb.tolerations | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.tolerations | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- if or (.Values.mariadb.imagePullSecrets) (.Values.imagePullSecrets) }}
+      imagePullSecrets:
+      {{- if .Values.mariadb.imagePullSecrets }}
+        {{- toYaml .Values.mariadb.imagePullSecrets | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.imagePullSecrets | nindent 6 }}
+      {{- end }}
+    {{- end }}
 {{- end }}

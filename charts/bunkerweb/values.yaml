@@ -4,6 +4,8 @@ nameOverride: ""
 namespaceOverride: ""
 fullnameOverride: ""
 nodeSelector: {}
+tolerations: []
+topologySpreadConstraints: []
 
 # Settings related to BW in a k8s environment
 settings:
@@ -32,6 +34,7 @@ settings:
     redisHost: ""
     redisUsername: ""
     redisPassword: ""
+
   ui:
     wizard: true
     ingress:
@@ -55,9 +58,27 @@ service:
 
 # BunkerWeb variables
 bunkerweb:
+  kind: DaemonSet
+  enableInstance: true # Pod annotations, required for k8s integration, or/and when using the controller
+  hostPorts: true
+  replicas: 1
   repository: bunkerity/bunkerweb
+  tag: 1.6.4
   pullPolicy: Always
-  tag: 1.6.1
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAntiAffinityPreset: 'soft'
+  ## RECOMMENDED RESOURCES
+  ## If you want to set resources for the bunkerweb, uncomment the following lines and adjust the values as needed.
+  # resources:
+  #   requests:
+  #    cpu: "2000m"
+  #    memory: "4096Mi"
+  #  limits:
+  #    cpu: "4000m"
+  #    memory: "8192Mi"
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -84,12 +105,35 @@ bunkerweb:
     periodSeconds: 1
     timeoutSeconds: 1
     failureThreshold: 3
+  ## PodDisruptionBudget for default backend
+  ## bunkerweb Pod Disruption Budget configuration
+  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  ## @param bunkerweb.pdb.create Enable Pod Disruption Budget configuration
+  ## @param bunkerweb.pdb.minAvailable Minimum number/percentage of Default backend pods that should remain scheduled
+  ## @param bunkerweb.pdb.maxUnavailable Maximum number/percentage of Default backend pods that should remain scheduled
+  ##
+  pdb:
+    create: true
+    minAvailable: ""
+    maxUnavailable: ""
 
 # Scheduler variables
 scheduler:
   repository: bunkerity/bunkerweb-scheduler
+  tag: 1.6.4
   pullPolicy: Always
-  tag: 1.6.1
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  ## RECOMMENDED RESOURCES
+  ## If you want to set resources for the Scheduler, uncomment the following lines and adjust the values as needed.
+  # resources:
+  #   requests:
+  #    cpu: "250m"
+  #    memory: "256Mi"
+  #  limits:
+  #    cpu: "500m"
+  #    memory: "512Mi"
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -100,13 +144,37 @@ scheduler:
       drop:
         - ALL
   extraEnvs: []
-  # todo : probes
+  # Probes
+  livenessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-scheduler.sh
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 3
+  # PRO Features only
+  proLicenseKey: ""
+  usePrometheusExporter: false
 
 # Controller variables
 controller:
+  enabled: true
   repository: bunkerity/bunkerweb-autoconf
+  tag: 1.6.4
   pullPolicy: Always
-  tag: 1.6.1
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  ## RECOMMENDED RESOURCES
+  ## If you want to set resources for the Controller, uncomment the following lines and adjust the values as needed.
+  # resources:
+  #   requests:
+  #    cpu: "100m"
+  #    memory: "128Mi"
+  #  limits:
+  #    cpu: "250m"
+  #    memory: "256Mi"
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -117,13 +185,41 @@ controller:
       drop:
         - ALL
   extraEnvs: []
-  # todo : probes
+  # probes
+  livenessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-autoconf.sh
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 3
+  readinessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-autoconf.sh
+    initialDelaySeconds: 30
+    periodSeconds: 1
+    timeoutSeconds: 1
+    failureThreshold: 3
 
 ui:
   enabled: true
   repository: bunkerity/bunkerweb-ui
+  tag: 1.6.4
   pullPolicy: Always
-  tag: 1.6.1
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  ## RECOMMENDED RESOURCES
+  ## If you want to set resources for the UI, uncomment the following lines and adjust the values as needed.
+  # resources:
+  #   requests:
+  #    cpu: "100m"
+  #    memory: "256Mi"
+  #  limits:
+  #    cpu: "250m"
+  #    memory: "512Mi"
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -134,12 +230,43 @@ ui:
       drop:
         - ALL
   extraEnvs: []
-  # todo : probes
+  logs:
+    enabled: false
+    repository: balabit/syslog-ng
+    pullPolicy: Always
+    tag: 4.8.0
+    persistence:
+      size: 5Gi
+      storageClass: ""
+
+  # probes
+  livenessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-ui.sh
+    initialDelaySeconds: 30
+    periodSeconds: 5
+    timeoutSeconds: 1
+    failureThreshold: 3
+  readinessProbe:
+    exec:
+      command:
+        - /usr/share/bunkerweb/helpers/healthcheck-ui.sh
+    initialDelaySeconds: 30
+    periodSeconds: 1
+    timeoutSeconds: 1
+    failureThreshold: 3
 
 # Database variables
 # Enable the mariadb service to persist the installation
 mariadb:
   enabled: true
+  repository: mariadb
+  tag: '11'
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   persistence:
     size: 5Gi
     storageClass: ""
@@ -149,6 +276,15 @@ mariadb:
     user: "bunkerweb"
     password: "changeme"
   args: []
+  ## RECOMMENDED RESOURCES
+  ## If you want to set resources for the DB, uncomment the following lines and adjust the values as needed.
+  # resources:
+  #   requests:
+  #    cpu: "250m"
+  #    memory: "512Mi"
+  #  limits:
+  #    cpu: "500m"
+  #    memory: "1024Mi"
 
 # Redis variables
 # Enable the redis service to persist the banned ips
@@ -158,11 +294,120 @@ redis:
   persistence:
     size: 1Gi
     storageClass: ""
+  repository: redis
+  tag: 7-alpine
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  useConfigFile: false
   config:
     password: "changeme"
+    file: |
+      appendonly yes
+      save ""
+      loglevel verbose
+      maxmemory 512mb
+      maxmemory-policy allkeys-lru
+  ## RECOMMENDED RESOURCES
+  ## If you want to set resources for the DB, uncomment the following lines and adjust the values as needed.
+  # resources:
+  #   requests:
+  #    cpu: "250m"
+  #    memory: "512Mi"
+  #  limits:
+  #    cpu: "500m"
+  #    memory: "1024Mi"
 
 # IngressClass variables
 ingressClass:
   enabled: true
   name: "bunkerweb"
   controller: "bunkerweb.io/ingress-controller"
+
+# Prometheus variables
+prometheus:
+  enabled: false
+  repository: prom/prometheus
+  pullPolicy: Always
+  tag: v3.3.1
+  replicas: 1
+  podAnnotations: {}
+  podLabels: {}
+  securityContext:
+    fsGroup: 65534
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+
+# Grafana variables
+grafana:
+  enabled: false
+  repository: grafana/grafana
+  tag: latest
+  pullPolicy: IfNotPresent
+  replicas: 1
+  adminUser: admin
+  adminPassword: "" # Leave empty to generate a random password
+  # existingSecret: "" # or use an existing secret for the password
+  service:
+    type: ClusterIP
+    port: 3000
+  ingress:
+    enabled: false
+    # className: ""
+    # annotations: {}
+    #   # kubernetes.io/ingress.class: nginx
+    #   # kubernetes.io/tls-acme: "true"
+    # hosts:
+    #   - host: chart-example.local
+    #     paths:
+    #       - path: /
+    #         pathType: ImplementationSpecific
+    # tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+  persistence:
+    enabled: false
+    size: 10Gi
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    # annotations: {}
+
+  # Config for Prometheus data source
+  prometheusDatasource:
+    name: Prometheus
+    type: prometheus
+    url: 'http://prometheus-{{ include "bunkerweb.fullname" . }}.{{ include "bunkerweb.namespace" . }}.svc:9090' # URL du service Prometheus
+    access: proxy
+    isDefault: true
+  podAnnotations: {}
+  podLabels: {}
+  securityContext:
+    {}
+    # fsGroup: 472
+    # runAsUser: 472
+    # runAsGroup: 472
+  # extraEnvs: []
+  # sidecar:
+  #   dashboards:
+  #     enabled: false
+  #     label: grafana_dashboard
+  #     labelValue: "1"
+  #     folder: /tmp/dashboards
+
+# Network Policy configuration
+networkPolicy:
+  enabled: false
+  egress:
+    allowSameNamespace: true
+    allowInternet: true
+    internetPorts: [80, 443]
+    allowDatabaseVNet: true
+    databaseVNetCIDR: "10.0.0.0/16"
+    databasePort: 3306
