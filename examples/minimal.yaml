@@ -1,0 +1,93 @@
+# Minimal BunkerWeb Configuration
+# Quick start configuration for testing and development
+
+# Simple configuration
+bunkerweb:
+  kind: Deployment
+  replicas: 1
+  hostPorts: false
+  
+  # Minimal resources for testing
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+# Enable only essential components
+scheduler:
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "100m"
+      memory: "256Mi"
+
+controller:
+  enabled: true
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "100m"
+      memory: "128Mi"
+
+ui:
+  enabled: true
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "100m"
+      memory: "256Mi"
+
+# Lightweight database setup
+mariadb:
+  enabled: true
+  persistence:
+    size: 1Gi
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "200m"
+      memory: "512Mi"
+
+# Lightweight Redis setup
+redis:
+  enabled: true
+  persistence:
+    size: 500Mi
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "100m"
+      memory: "256Mi"
+
+# Simple service
+service:
+  type: ClusterIP
+
+# Basic settings
+settings:
+  kubernetes:
+    ingressClass: "bunkerweb"
+
+# Disable monitoring for minimal setup
+prometheus:
+  enabled: false
+
+grafana:
+  enabled: false
+
+# No network policies for simplicity
+networkPolicy:
+  enabled: false
