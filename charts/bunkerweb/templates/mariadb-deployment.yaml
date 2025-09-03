@@ -26,7 +26,7 @@ spec:
           {{- end }}
           {{- if .Values.mariadb.args }}
           args:
-            {{- toYaml .Values.mariadb.args | indent 12 }}
+            {{- toYaml .Values.mariadb.args | nindent 12 }}
           {{- end }}
           env:
             - name: MARIADB_RANDOM_ROOT_PASSWORD
