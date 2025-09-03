@@ -1,0 +1,10 @@
+{{- if and .Values.redis.enabled .Values.redis.useConfigFile }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+data:
+  redis.conf: |
+    {{- .Values.redis.config.file | nindent 4 }}
+{{- end }}

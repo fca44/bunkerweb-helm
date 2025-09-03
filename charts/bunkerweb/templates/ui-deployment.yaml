@@ -26,8 +26,20 @@ spec:
         - name: bunkerweb-ui
           image: {{ .Values.ui.repository }}:{{ .Values.ui.tag }}
           imagePullPolicy: {{ .Values.ui.pullPolicy }}
+          {{- with .Values.ui.resources }}
+          resources:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           {{- with .Values.ui.securityContext }}
           securityContext:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
+          {{- with .Values.ui.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
+          {{- with .Values.ui.readinessProbe }}
+          readinessProbe:
             {{- toYaml . | nindent 12}}
           {{- end }}
           env:
@@ -140,4 +152,8 @@ spec:
         {{- toYaml .Values.imagePullSecrets | nindent 6 }}
       {{- end }}
     {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end }}

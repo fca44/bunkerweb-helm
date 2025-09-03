@@ -26,8 +26,16 @@ spec:
         - name: bunkerweb-scheduler
           image: {{ .Values.scheduler.repository }}:{{ .Values.scheduler.tag }}
           imagePullPolicy: {{ .Values.scheduler.pullPolicy }}
+          {{- with .Values.scheduler.resources }}
+          resources:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           {{- with .Values.scheduler.securityContext }}
           securityContext:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
+          {{- with .Values.scheduler.livenessProbe }}
+          livenessProbe:
             {{- toYaml . | nindent 12}}
           {{- end }}
           env:
@@ -67,7 +75,7 @@ spec:
             - name: UI_HOST
               value: "{{ include "bunkerweb.uiHost" . }}"
             {{- end }}
-            {{- if .Values.prometheus.enabled }}
+            {{- if .Values.scheduler.usePrometheusExporter }}
             - name: USE_PROMETHEUS_EXPORTER
               value: "yes"
             - name: USE_MONITORING
@@ -108,3 +116,7 @@ spec:
         {{- toYaml .Values.imagePullSecrets | nindent 6 }}
       {{- end }}
     {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

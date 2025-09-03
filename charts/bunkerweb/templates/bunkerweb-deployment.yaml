@@ -15,7 +15,9 @@ spec:
     metadata:
       annotations:
         # mandatory annotation
+        {{- if .Values.bunkerweb.enableInstance | default true }}
         bunkerweb.io/INSTANCE: "yes"
+        {{- end }}
       {{- with .Values.bunkerweb.podAnnotations }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -55,6 +57,10 @@ spec:
         - name: bunkerweb
           image: {{ .Values.bunkerweb.repository }}:{{ .Values.bunkerweb.tag }}
           imagePullPolicy: {{ .Values.bunkerweb.pullPolicy }}
+          {{- with .Values.bunkerweb.resources }}
+          resources:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           {{- with .Values.bunkerweb.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12}}
@@ -85,10 +91,17 @@ spec:
           readinessProbe:
             {{- toYaml . | nindent 12}}
           {{- end }}
+    {{- if .Values.bunkerweb.nodeSelector }}
+      {{- with .Values.bunkerweb.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if .Values.nodeSelector }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    {{- end }}
     {{- if or (.Values.bunkerweb.tolerations) (.Values.tolerations) }}
       tolerations:
       {{- if .Values.bunkerweb.tolerations }}
@@ -105,4 +118,8 @@ spec:
         {{- toYaml .Values.imagePullSecrets | nindent 6 }}
       {{- end }}
     {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
 {{- end }}
