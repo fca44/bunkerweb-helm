@@ -18,10 +18,22 @@ spec:
     spec:
       containers:
         - name: redis
-          image: redis:7-alpine
-          imagePullPolicy: Always
+          image: {{ .Values.redis.repository }}:{{ .Values.redis.tag }}
+          imagePullPolicy:  {{ .Values.redis.pullPolicy }}
           command: ["redis-server"]
+          resources:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           args: ["--requirepass", "$(REDIS_PASSWORD)"]
+          {{- if .Values.redis.useConfigFile }}
+          command: ["redis-server", "/etc/redis/redis.conf"]
+          volumeMounts:
+            - name: redis-config
+              mountPath: /etc/redis/redis.conf
+              subPath: redis.conf
+          {{- else }}
+          command: ["redis-server"]
+          {{- end }}
           env:
             - name: REDIS_PASSWORD
               {{- if not (empty .Values.settings.existingSecret) }}
@@ -31,9 +43,42 @@ spec:
                   key: redis-password
               {{- else }}
               value: "{{ .Values.redis.config.password }}"
-              {{- end }}
+              {{- end }}       
+      {{- if .Values.redis.useConfigFile }}
+      volumes:
+        - name: redis-config
+          configMap:
+            name: redis-config-{{ include "bunkerweb.fullname" . }}
+      {{- end }}
+    {{- if .Values.redis.nodeSelector }}
+      {{- with .Values.redis.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if .Values.nodeSelector }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- end }}
+    {{- if or (.Values.redis.tolerations) (.Values.tolerations) }}
+      tolerations:
+      {{- if .Values.redis.tolerations }}
+        {{- toYaml .Values.redis.tolerations | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.tolerations | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- if or (.Values.redis.imagePullSecrets) (.Values.imagePullSecrets) }}
+      imagePullSecrets:
+      {{- if .Values.redis.imagePullSecrets }}
+        {{- toYaml .Values.redis.imagePullSecrets | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.imagePullSecrets | nindent 6 }}
+      {{- end }}
+    {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 {{- end }}

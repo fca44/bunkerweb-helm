@@ -1,3 +1,4 @@
+{{- if .Values.controller.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,6 +31,14 @@ spec:
           securityContext:
             {{- toYaml . | nindent 12}}
           {{- end }}
+          {{- with .Values.controller.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
+          {{- with .Values.controller.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
           env:
             # Mandatory for k8s integration
             - name: KUBERNETES_MODE
@@ -49,7 +58,31 @@ spec:
               value: "{{ .Values.settings.kubernetes.ingressClass }}"
             - name: KUBERNETES_DOMAIN_NAME
               value: "{{ .Values.settings.kubernetes.domainName }}"
+    {{- if .Values.controller.nodeSelector }}
+      {{- with .Values.controller.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if .Values.nodeSelector }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    {{- end }}
+    {{- if or (.Values.controller.tolerations) (.Values.tolerations) }}
+      tolerations:
+      {{- if .Values.controller.tolerations }}
+        {{- toYaml .Values.controller.tolerations | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.tolerations | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- if or (.Values.controller.imagePullSecrets) (.Values.imagePullSecrets) }}
+      imagePullSecrets:
+      {{- if .Values.controller.imagePullSecrets }}
+        {{- toYaml .Values.controller.imagePullSecrets | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.imagePullSecrets | nindent 6 }}
+      {{- end }}
+    {{- end }}
+{{- end }}

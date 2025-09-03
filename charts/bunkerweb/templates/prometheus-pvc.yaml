@@ -1,0 +1,27 @@
+{{- if and .Values.prometheus.enabled .Values.prometheus.persistence.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-data-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+    bunkerweb.io/component: "prometheus"
+  {{- with .Values.prometheus.persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml .Values.prometheus.persistence.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.prometheus.persistence.size | quote }}
+  {{- if .Values.prometheus.persistence.storageClass }}
+  {{- if (eq "-" .Values.prometheus.persistence.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.prometheus.persistence.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}
