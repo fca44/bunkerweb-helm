@@ -258,6 +258,7 @@ ui:
     failureThreshold: 3
 
 # Database variables
+# Enable the mariadb service to persist the installation
 mariadb:
   enabled: true
   repository: mariadb
@@ -286,8 +287,13 @@ mariadb:
   #    memory: "1024Mi"
 
 # Redis variables
+# Enable the redis service to persist the banned ips
+# Find futher information: https://docs.bunkerweb.io/latest/advanced/#persistence-of-bans-and-reports
 redis:
   enabled: true
+  persistence:
+    size: 1Gi
+    storageClass: ""
   repository: redis
   tag: 7-alpine
   pullPolicy: Always
