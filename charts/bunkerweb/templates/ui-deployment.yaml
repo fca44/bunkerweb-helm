@@ -93,10 +93,65 @@ spec:
             {{- if .Values.ui.extraEnvs }}
               {{- toYaml .Values.ui.extraEnvs | nindent 12 }}
             {{- end }}
+      {{- if .Values.ui.logs.enabled }}
+          volumeMounts:
+            - name: bunkerweb-logs
+              mountPath: /var/log/bunkerweb
+        - name: bunkerweb-syslog
+          image: {{ .Values.ui.logs.repository }}:{{ .Values.ui.logs.tag }}
+          imagePullPolicy: {{ .Values.ui.logs.pullPolicy }}
+          securityContext:
+            capabilities:
+              add:
+              - NET_BIND_SERVICE
+              - NET_BROADCAST
+              - NET_RAW
+              - DAC_READ_SEARCH
+              - DAC_OVERRIDE
+              - CHOWN
+              - SYSLOG
+          volumeMounts:
+            - name: bunkerweb-logs
+              mountPath: /var/log/bunkerweb
+            - name: bunkerweb-syslog-config
+              mountPath: /etc/syslog-ng/syslog-ng.conf
+              subPath: syslog-ng.conf
+              readOnly: true
+      volumes:
+      - name: bunkerweb-logs
+        persistentVolumeClaim:
+          claimName: ui-{{ include "bunkerweb.fullname" . }}
+      - name: bunkerweb-syslog-config
+        configMap:
+          name: ui-{{ include "bunkerweb.fullname" . }}
+      {{- end }}
+    {{- if .Values.ui.nodeSelector }}
+      {{- with .Values.ui.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- else if .Values.nodeSelector }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    {{- end }}
+    {{- if or (.Values.ui.tolerations) (.Values.tolerations) }}
+      tolerations:
+      {{- if .Values.ui.tolerations }}
+        {{- toYaml .Values.ui.tolerations | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.tolerations | nindent 6 }}
+      {{- end }}
+    {{- end }}
+    {{- if or (.Values.ui.imagePullSecrets) (.Values.imagePullSecrets) }}
+      imagePullSecrets:
+      {{- if .Values.ui.imagePullSecrets }}
+        {{- toYaml .Values.ui.imagePullSecrets | nindent 6 }}
+      {{- else }}
+        {{- toYaml .Values.imagePullSecrets | nindent 6 }}
+      {{- end }}
+    {{- end }}
       {{- with .Values.topologySpreadConstraints }}
       topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}

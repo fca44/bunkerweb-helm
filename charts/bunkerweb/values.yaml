@@ -4,6 +4,7 @@ nameOverride: ""
 namespaceOverride: ""
 fullnameOverride: ""
 nodeSelector: {}
+tolerations: []
 topologySpreadConstraints: []
 
 # Settings related to BW in a k8s environment
@@ -62,8 +63,13 @@ bunkerweb:
   hostPorts: true
   replicas: 1
   repository: bunkerity/bunkerweb
+  tag: 1.6.4
   pullPolicy: Always
-  tag: 1.6.2
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAntiAffinityPreset: 'soft'
   ## RECOMMENDED RESOURCES
   ## If you want to set resources for the bunkerweb, uncomment the following lines and adjust the values as needed.
   # resources:
@@ -99,12 +105,26 @@ bunkerweb:
     periodSeconds: 1
     timeoutSeconds: 1
     failureThreshold: 3
+  ## PodDisruptionBudget for default backend
+  ## bunkerweb Pod Disruption Budget configuration
+  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  ## @param bunkerweb.pdb.create Enable Pod Disruption Budget configuration
+  ## @param bunkerweb.pdb.minAvailable Minimum number/percentage of Default backend pods that should remain scheduled
+  ## @param bunkerweb.pdb.maxUnavailable Maximum number/percentage of Default backend pods that should remain scheduled
+  ##
+  pdb:
+    create: true
+    minAvailable: ""
+    maxUnavailable: ""
 
 # Scheduler variables
 scheduler:
   repository: bunkerity/bunkerweb-scheduler
+  tag: 1.6.4
   pullPolicy: Always
-  tag: 1.6.2
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   ## RECOMMENDED RESOURCES
   ## If you want to set resources for the Scheduler, uncomment the following lines and adjust the values as needed.
   # resources:
@@ -141,8 +161,11 @@ scheduler:
 controller:
   enabled: true
   repository: bunkerity/bunkerweb-autoconf
+  tag: 1.6.4
   pullPolicy: Always
-  tag: 1.6.2
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   ## RECOMMENDED RESOURCES
   ## If you want to set resources for the Controller, uncomment the following lines and adjust the values as needed.
   # resources:
@@ -183,8 +206,11 @@ controller:
 ui:
   enabled: true
   repository: bunkerity/bunkerweb-ui
+  tag: 1.6.4
   pullPolicy: Always
-  tag: 1.6.2
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   ## RECOMMENDED RESOURCES
   ## If you want to set resources for the UI, uncomment the following lines and adjust the values as needed.
   # resources:
@@ -204,6 +230,15 @@ ui:
       drop:
         - ALL
   extraEnvs: []
+  logs:
+    enabled: false
+    repository: balabit/syslog-ng
+    pullPolicy: Always
+    tag: 4.8.0
+    persistence:
+      size: 5Gi
+      storageClass: ""
+
   # probes
   livenessProbe:
     exec:
@@ -223,8 +258,15 @@ ui:
     failureThreshold: 3
 
 # Database variables
+# Enable the mariadb service to persist the installation
 mariadb:
   enabled: true
+  repository: mariadb
+  tag: '11'
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   persistence:
     size: 5Gi
     storageClass: ""
@@ -245,8 +287,19 @@ mariadb:
   #    memory: "1024Mi"
 
 # Redis variables
+# Enable the redis service to persist the banned ips
+# Find futher information: https://docs.bunkerweb.io/latest/advanced/#persistence-of-bans-and-reports
 redis:
   enabled: true
+  persistence:
+    size: 1Gi
+    storageClass: ""
+  repository: redis
+  tag: 7-alpine
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   useConfigFile: false
   config:
     password: "changeme"
@@ -352,6 +405,7 @@ grafana:
 networkPolicy:
   enabled: false
   egress:
+    allowSameNamespace: true
     allowInternet: true
     internetPorts: [80, 443]
     allowDatabaseVNet: true
