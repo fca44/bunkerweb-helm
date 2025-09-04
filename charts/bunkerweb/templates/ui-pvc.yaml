@@ -1,0 +1,18 @@
+{{- if .Values.ui.logs.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ui-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  {{- if not (empty .Values.ui.logs.persistence.storageClass) }}
+  storageClassName: "{{ .Values.ui.logs.persistence.storageClass }}"
+  {{- end }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.ui.logs.persistence.size }}
+{{- end }}

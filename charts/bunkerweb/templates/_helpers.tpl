@@ -93,7 +93,7 @@ REDIS settings
   {{- if .Values.settings.redis.redisHost }}
   value: "{{ .Values.settings.redis.redisHost }}"
   {{- else }}
-  value: "redis-{{ include "bunkerweb.fullname" . }}"
+  value: "redis-{{ include "bunkerweb.fullname" . }}.{{ include "bunkerweb.namespace" . }}.svc.{{ .Values.settings.kubernetes.domainName }}"
   {{- end }}
 - name: REDIS_USERNAME
   value: ""

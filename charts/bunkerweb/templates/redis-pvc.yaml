@@ -1,0 +1,18 @@
+{{- if .Values.redis.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+spec:
+  {{- if not (empty .Values.redis.persistence.storageClass) }}
+  storageClassName: "{{ .Values.redis.persistence.storageClass }}"
+  {{- end }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.redis.persistence.size }}
+{{- end }}

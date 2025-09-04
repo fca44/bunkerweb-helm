@@ -1,24 +1,171 @@
-TODO - edit notes
+BunkerWeb has been successfully deployed!
 
-{{/*1. Get the application URL by running these commands:
-{{- if .Values.ingress.enabled }}
-{{- range $host := .Values.ingress.hosts }}
-  {{- range .paths }}
-  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
-  {{- end }}
+================================================================================
+                           DEPLOYMENT INFORMATION
+================================================================================
+
+Release Name: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Chart Version: {{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
+
+================================================================================
+                              COMPONENT STATUS
+================================================================================
+
+BunkerWeb ({{ .Values.bunkerweb.kind }}): {{ if .Values.bunkerweb.kind }}Enabled{{ else }}Disabled{{ end }}
+Scheduler: Enabled
+Controller: {{ if .Values.controller.enabled }}Enabled{{ else }}Disabled{{ end }}
+Web UI: {{ if .Values.ui.enabled }}Enabled{{ else }}Disabled{{ end }}
+MariaDB: {{ if .Values.mariadb.enabled }}Enabled{{ else }}Disabled{{ end }}
+Redis: {{ if .Values.redis.enabled }}Enabled{{ else }}Disabled{{ end }}
+Prometheus: {{ if .Values.prometheus.enabled }}Enabled{{ else }}Disabled{{ end }}
+Grafana: {{ if .Values.grafana.enabled }}Enabled{{ else }}Disabled{{ end }}
+
+================================================================================
+                            ACCESS INFORMATION
+================================================================================
+
+{{- if .Values.service.enabled }}
+BunkerWeb Service:
+{{- if eq .Values.service.type "LoadBalancer" }}
+   Type: LoadBalancer
+   NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+   
+   To get the external IP, run:
+   kubectl get svc {{ include "bunkerweb.fullname" . }}-external -n {{ .Release.Namespace }}
+   
+   Once available, BunkerWeb will be accessible at:
+   http://<EXTERNAL-IP>:80
+   https://<EXTERNAL-IP>:443
+
+{{- else if eq .Values.service.type "NodePort" }}
+   Type: NodePort
+   
+   To get the NodePort, run:
+   export NODE_PORT_HTTP=$(kubectl get svc {{ include "bunkerweb.fullname" . }}-external -n {{ .Release.Namespace }} -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+   export NODE_PORT_HTTPS=$(kubectl get svc {{ include "bunkerweb.fullname" . }}-external -n {{ .Release.Namespace }} -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+   export NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="ExternalIP")].address}')
+   
+   BunkerWeb will be accessible at:
+   http://$NODE_IP:$NODE_PORT_HTTP
+   https://$NODE_IP:$NODE_PORT_HTTPS
+
+{{- else }}
+   Type: ClusterIP (Internal only)
+   
+   To access BunkerWeb from outside the cluster, use port-forward:
+   kubectl port-forward svc/{{ include "bunkerweb.fullname" . }}-external 8080:80 -n {{ .Release.Namespace }}
+   
+   Then access: http://localhost:8080
 {{- end }}
-{{- else if contains "NodePort" .Values.service.type }}
-  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "..fullname" . }})
-  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
-  echo http://$NODE_IP:$NODE_PORT
-{{- else if contains "LoadBalancer" .Values.service.type }}
-     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-           You can watch its status by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "..fullname" . }}'
-  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "..fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
-  echo http://$SERVICE_IP:{{ .Values.service.port }}
-{{- else if contains "ClusterIP" .Values.service.type }}
-  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "..name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
-  export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
-  echo "Visit http://127.0.0.1:8080 to use your application"
-  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8080:$CONTAINER_PORT
-{{- end }} */}}
+{{- end }}
+
+{{- if .Values.ui.enabled }}
+Web UI:
+{{- if .Values.settings.ui.ingress.enabled }}
+   External URL: {{ if .Values.settings.ui.ingress.tlsSecretName }}https{{ else }}http{{ end }}://{{ .Values.settings.ui.ingress.serverName }}{{ .Values.settings.ui.ingress.serverPath }}
+{{- else }}
+   Internal Access (port-forward):
+   kubectl port-forward svc/ui-{{ include "bunkerweb.fullname" . }} 7000:7000 -n {{ .Release.Namespace }}
+   
+   Then access: http://localhost:7000
+{{- end }}
+
+   Default credentials:
+{{- if .Values.settings.ui.adminUsername }}
+   Username: {{ .Values.settings.ui.adminUsername }}
+{{- else }}
+   Username: admin
+{{- end }}
+{{- if .Values.settings.ui.adminPassword }}
+   Password: {{ .Values.settings.ui.adminPassword }}
+{{- else }}
+   Password: changeme (CHANGE THIS IN PRODUCTION!)
+{{- end }}
+{{- end }}
+
+{{- if .Values.grafana.enabled }}
+Grafana Dashboard:
+{{- if .Values.grafana.ingress.enabled }}
+   External URL: {{ range .Values.grafana.ingress.hosts }}http{{ if $.Values.grafana.ingress.tls }}s{{ end }}://{{ .host }}{{ range .paths }}{{ .path }}{{ end }}{{ end }}
+{{- else }}
+   Internal Access (port-forward):
+   kubectl port-forward svc/grafana-{{ include "bunkerweb.fullname" . }} 3000:3000 -n {{ .Release.Namespace }}
+   
+   Then access: http://localhost:3000
+{{- end }}
+
+   Credentials:
+   Username: {{ .Values.grafana.adminUser }}
+{{- if .Values.grafana.adminPassword }}
+   Password: {{ .Values.grafana.adminPassword }}
+{{- else }}
+   Password: (Check secret or use random generated password)
+   kubectl get secret grafana-{{ include "bunkerweb.fullname" . }} -n {{ .Release.Namespace }} -o jsonpath='{.data.admin-password}' | base64 -d
+{{- end }}
+{{- end }}
+
+================================================================================
+                               NEXT STEPS
+================================================================================
+
+1. Check deployment status:
+   kubectl get pods -n {{ .Release.Namespace }}
+   kubectl get svc -n {{ .Release.Namespace }}
+
+2. View logs:
+   kubectl logs -l app.kubernetes.io/name={{ include "bunkerweb.name" . }} -n {{ .Release.Namespace }}
+
+3. Configure your first protected application:
+   {{- if .Values.controller.enabled }}
+   Create an Ingress resource with ingressClassName: {{ .Values.ingressClass.name }}
+   
+   Example:
+   apiVersion: networking.k8s.io/v1
+   kind: Ingress
+   metadata:
+     name: my-app
+     annotations:
+       bunkerweb.io/AUTO_LETS_ENCRYPT: "yes"
+   spec:
+     ingressClassName: {{ .Values.ingressClass.name }}
+     rules:
+     - host: myapp.example.com
+       http:
+         paths:
+         - path: /
+           pathType: Prefix
+           backend:
+             service:
+               name: my-app-service
+               port:
+                 number: 80
+   {{- else }}
+   Configure BunkerWeb manually through the Web UI or configuration files.
+   {{- end }}
+
+4. Security recommendations:
+   {{- if not .Values.settings.existingSecret }}
+   - Change default passwords for UI and databases
+   - Consider using Kubernetes secrets for sensitive data
+   {{- end }}
+   - Review network policies if enabled
+   - Configure proper resource limits for production
+
+5. Enable monitoring (optional):
+   helm upgrade {{ .Release.Name }} bunkerweb/bunkerweb \
+     --set prometheus.enabled=true \
+     --set grafana.enabled=true \
+     -n {{ .Release.Namespace }}
+
+================================================================================
+                              SUPPORT & DOCS
+================================================================================
+
+Documentation: https://docs.bunkerweb.io/
+Issue Tracker: https://github.com/bunkerity/bunkerweb/issues
+Community: https://github.com/bunkerity/bunkerweb/discussions
+Helm Chart: https://github.com/bunkerity/bunkerweb-helm
+
+Secured by Default ! 

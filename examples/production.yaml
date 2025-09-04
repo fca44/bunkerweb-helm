@@ -1,0 +1,190 @@
+# Production-Ready BunkerWeb Configuration
+# This configuration provides a secure, scalable setup suitable for production environments
+
+# Global settings
+nameOverride: "bunkerweb-prod"
+
+# BunkerWeb Core Configuration
+bunkerweb:
+  kind: DaemonSet
+  hostPorts: true
+  
+  # Production resource limits
+  resources:
+    requests:
+      cpu: "2000m"
+      memory: "4096Mi"
+    limits:
+      cpu: "4000m"
+      memory: "8192Mi"
+  
+  # Enable Pod Disruption Budget
+  pdb:
+    create: true
+    minAvailable: 1
+
+# Scheduler Configuration
+scheduler:
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+# Controller Configuration
+controller:
+  enabled: true
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+
+# Web UI Configuration
+ui:
+  enabled: true
+  
+  # Enable log collection
+  logs:
+    enabled: true
+    persistence:
+      size: 10Gi
+      storageClass: "fast-ssd"
+  
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "250m"
+      memory: "512Mi"
+  
+  # External access configuration
+  ingress:
+    enabled: true
+    serverName: "bunkerweb-ui.yourdomain.com"
+    tlsSecretName: "bunkerweb-ui-tls"
+    extraAnnotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+# Service Configuration
+service:
+  type: LoadBalancer
+  annotations:
+    # AWS Load Balancer annotations (adjust for your cloud provider)
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+
+# Database Configuration
+mariadb:
+  enabled: true
+  
+  # Production database resources
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1024Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2048Mi"
+  
+  # Persistent storage
+  persistence:
+    size: 20Gi
+    storageClass: "fast-ssd"
+  
+  # Security configuration
+  config:
+    randomRootPassword: "1"
+    database: "bunkerweb_prod"
+    user: "bunkerweb"
+    password: "CHANGE_THIS_PASSWORD"
+
+# Redis Configuration
+redis:
+  enabled: true
+  
+  # Production Redis resources
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "500m"
+      memory: "1024Mi"
+  
+  # Persistent storage
+  persistence:
+    size: 5Gi
+    storageClass: "fast-ssd"
+  
+  # Security configuration
+  config:
+    password: "CHANGE_THIS_PASSWORD"
+    file: |
+      appendonly yes
+      save 900 1
+      save 300 10
+      save 60 10000
+      loglevel notice
+      maxmemory 1gb
+      maxmemory-policy allkeys-lru
+
+# Settings
+settings:
+  # Use secrets for sensitive data (recommended)
+  existingSecret: "bunkerweb-secrets"
+  
+  kubernetes:
+    ingressClass: "bunkerweb"
+    namespaces: "default,production"
+  
+  misc:
+    dnsResolvers: "1.1.1.1 8.8.8.8"
+    apiWhitelistIp: "127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
+
+# IngressClass
+ingressClass:
+  enabled: true
+  name: "bunkerweb"
+
+# Monitoring (optional but recommended)
+prometheus:
+  enabled: false  # Set to true to enable
+  persistence:
+    enabled: true
+    size: 50Gi
+    storageClass: "standard"
+
+grafana:
+  enabled: false  # Set to true to enable
+  adminPassword: "CHANGE_THIS_PASSWORD"
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: "standard"
+  
+  ingress:
+    enabled: false  # Set to true to enable external access
+    # hosts:
+    #   - host: grafana.yourdomain.com
+    #     paths:
+    #       - path: /
+    #         pathType: ImplementationSpecific
+    # tls:
+    #   - secretName: grafana-tls
+    #     hosts:
+    #       - grafana.yourdomain.com
+
+# Network Security
+networkPolicy:
+  enabled: true
+  egress:
+    allowSameNamespace: true
+    allowInternet: true
+    internetPorts: [80, 443, 53]
