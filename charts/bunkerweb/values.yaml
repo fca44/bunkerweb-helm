@@ -258,6 +258,23 @@ bunkerweb:
     periodSeconds: 1
     timeoutSeconds: 1
     failureThreshold: 3
+
+  # Custom volumes configuration
+  # Allows mounting additional volumes to the BunkerWeb container
+  volumes: []
+  # Example:
+  # volumes:
+  #   - name: shared-data
+  #     persistentVolumeClaim:
+  #       claimName: shared-pvc
+
+  # Custom volume mounts configuration
+  # Defines where to mount the custom volumes in the container
+  volumeMounts: []
+  # Example:
+  # volumeMounts:
+  #   - name: shared-data
+  #     mountPath: /var/lib/bunkerweb/shared
   ## PodDisruptionBudget for default backend
   ## bunkerweb Pod Disruption Budget configuration
   ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
