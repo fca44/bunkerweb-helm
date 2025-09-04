@@ -20,15 +20,8 @@ spec:
         - name: redis
           image: {{ .Values.redis.repository }}:{{ .Values.redis.tag }}
           imagePullPolicy:  {{ .Values.redis.pullPolicy }}
+          {{- if .Values.redis.useConfigFile }}
           command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-          volumeMounts:
-          - name: redis-config
-            mountPath: /usr/local/etc/redis/
-            readOnly: true
-          - name: redis-data
-            mountPath: /data
-          resources:
-            {{- toYaml . | nindent 12}}
           {{- end }}
           args: ["--requirepass", "$(REDIS_PASSWORD)"]
           env:
@@ -40,11 +33,25 @@ spec:
                   key: redis-password
               {{- else }}
               value: "{{ .Values.redis.config.password }}"
-              {{- end }}       
+              {{- end }}
+          {{- with .Values.redis.resources }}
+          resources:
+            {{- toYaml . | nindent 12}}
+          {{- end }}
+          volumeMounts:
+          {{- if .Values.redis.useConfigFile }}
+          - name: redis-config
+            mountPath: /usr/local/etc/redis/
+            readOnly: true
+          {{- end }}
+          - name: redis-data
+            mountPath: /data       
       volumes:
+      {{- if .Values.redis.useConfigFile }}
       - name: redis-config
         configMap:
           name: redis-config-{{ include "bunkerweb.fullname" . }}
+      {{- end }}
       - name: redis-data
         persistentVolumeClaim:
           claimName: redis-{{ include "bunkerweb.fullname" . }}

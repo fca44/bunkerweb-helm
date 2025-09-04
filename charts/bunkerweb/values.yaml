@@ -17,7 +17,7 @@ imagePullSecrets: []
 # Override the chart name (default: chart name)
 nameOverride: ""
 
-# Override the namespace (default: release namespace)  
+# Override the namespace (default: release namespace)
 namespaceOverride: ""
 
 # Override the full resource name (default: release-chart)
@@ -61,11 +61,11 @@ settings:
     # Empty string means all namespaces (requires cluster-wide permissions)
     # Example: "default,production,staging"
     namespaces: ""
-    
+
     # Ingress class name that BunkerWeb will handle
     # Must match the IngressClass resource name
     ingressClass: ""
-    
+
     # Kubernetes cluster domain name for service discovery
     domainName: "cluster.local"
 
@@ -74,11 +74,11 @@ settings:
     # Database connection URI (auto-generated if using internal MariaDB)
     # Format: mysql+pymysql://user:password@host:port/database
     databaseUri: ""
-    
+
     # DNS resolvers for BunkerWeb (space-separated)
     # Default uses CoreDNS service in kube-system namespace
     dnsResolvers: "coredns.kube-system.svc.cluster.local"
-    
+
     # IP ranges allowed to access BunkerWeb API (space-separated CIDR blocks)
     # Includes common Kubernetes and private network ranges
     apiWhitelistIp: "127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
@@ -88,10 +88,10 @@ settings:
     # Enable Redis for caching and persistence
     # Recommended for production environments
     useRedis: "yes"
-    
+
     # Redis hostname (auto-configured if using internal Redis)
     redisHost: ""
-    
+
     # Redis authentication (leave empty if not using auth)
     redisUsername: ""
     redisPassword: ""
@@ -100,61 +100,64 @@ settings:
   ui:
     # Enable the setup wizard on first launch
     wizard: true
-    
+
     # Ingress configuration for UI access
     ingress:
       # Set to true to create an Ingress resource for the UI
       enabled: false
-      
+
+      # IngressClass name to use
+      ingressClassName: ""
+
       # Domain name for UI access
       # Example: "bunkerweb-ui.example.com"
       serverName: ""
-      
+
       # Path for UI access (usually "/")
       serverPath: "/"
-      
+
       # Additional annotations for the Ingress resource
       # Example: {"cert-manager.io/cluster-issuer": "letsencrypt-prod"}
       extraAnnotations: {}
-      
+
       # Secret name containing TLS certificate
       # Leave empty to disable HTTPS
       tlsSecretName: ""
-    
+
     # UI authentication settings
     adminUsername: ""
     adminPassword: ""
-    
+
     # Override admin credentials on startup
     # Set to "yes" to reset admin credentials to the values above
     overrideAdminCreds: "no"
-    
+
     # Flask session secret (auto-generated if empty)
     flaskSecret: ""
-    
+
     # TOTP secrets for two-factor authentication
     totpSecrets: ""
 
 # =============================================================================
-# SERVICE CONFIGURATION  
+# SERVICE CONFIGURATION
 # =============================================================================
 # External service for BunkerWeb (LoadBalancer/NodePort)
 
 service:
   # Enable external service creation
   enabled: true
-  
+
   # Service type: LoadBalancer, NodePort, or ClusterIP
   # LoadBalancer: Exposes service externally using cloud provider's load balancer
   # NodePort: Exposes service on each node's IP at a static port
   # ClusterIP: Only accessible within the cluster
   type: LoadBalancer
-  
+
   # External traffic policy: Local or Cluster
   # Local: Preserves client IP but may cause uneven distribution
   # Cluster: Better distribution but loses client IP
   externalTrafficPolicy: Local
-  
+
   # Additional service annotations
   # Example: {"service.beta.kubernetes.io/aws-load-balancer-type": "nlb"}
   annotations: {}
@@ -165,44 +168,48 @@ service:
 # Main reverse proxy and WAF component
 
 bunkerweb:
-  # Deployment type: "DaemonSet" or "Deployment"
+  # Deployment type: "DaemonSet" or "Deployment" or "StatefulSet"
   # DaemonSet: Runs one pod per node (recommended for ingress)
   # Deployment: Runs specified number of replicas
-  kind: DaemonSet
-  
+  # StatefulSet: For stable network IDs and storage (not typical for ingress)
+  kind: Deployment
+
+  # Replica count for Deployment mode and PodDisruptionBudget
+  replicaCount: 1
+
   # Pod annotations for Kubernetes integration (required)
   # This enables BunkerWeb to be managed by the controller
   enableInstance: true
-  
+
   # Use host ports for direct traffic (only for DaemonSet)
   # Allows binding to ports 80/443 on each node
   hostPorts: true
-  
+
   # Number of replicas (only for Deployment kind)
   replicas: 1
-  
+
   # Container image configuration
   repository: bunkerity/bunkerweb
   tag: 1.6.4
   pullPolicy: Always
-  
+
   # Image pull secrets (overrides global setting)
   imagePullSecrets: []
-  
+
   # Node selector (overrides global setting)
   nodeSelector: {}
-  
+
   # Tolerations (overrides global setting)
   tolerations: []
-  
+
   # Pod affinity rules
   affinity: {}
-  
+
   # Anti-affinity preset: "soft" or "hard"
   # soft: Prefers not to schedule pods on same node
   # hard: Never schedules pods on same node
-  podAntiAffinityPreset: 'soft'
-  
+  podAntiAffinityPreset: "soft"
+
   # Resource requests and limits
   # RECOMMENDED: Uncomment and adjust for production
   # resources:
@@ -212,13 +219,13 @@ bunkerweb:
   #   limits:
   #     cpu: "4000m"
   #     memory: "8192Mi"
-  
+
   # Additional pod annotations
   podAnnotations: {}
-  
+
   # Additional pod labels
   podLabels: {}
-  
+
   # Security context for BunkerWeb container
   securityContext:
     runAsUser: 101
@@ -227,11 +234,11 @@ bunkerweb:
     capabilities:
       drop:
         - ALL
-  
+
   # Additional environment variables
   # Example: extraEnvs: [{"name": "DEBUG", "value": "true"}]
   extraEnvs: []
-  
+
   # Liveness probe configuration
   livenessProbe:
     exec:
@@ -241,7 +248,7 @@ bunkerweb:
     periodSeconds: 5
     timeoutSeconds: 1
     failureThreshold: 3
-  
+
   # Readiness probe configuration
   readinessProbe:
     exec:
@@ -260,11 +267,11 @@ bunkerweb:
   ##
   pdb:
     create: true
-    
+
     # Minimum number/percentage of pods that must remain available
     # Example: minAvailable: 1 or minAvailable: "50%"
     minAvailable: ""
-    
+
     # Maximum number/percentage of pods that can be unavailable
     # Example: maxUnavailable: 1 or maxUnavailable: "25%"
     maxUnavailable: ""
@@ -279,16 +286,16 @@ scheduler:
   repository: bunkerity/bunkerweb-scheduler
   tag: 1.6.4
   pullPolicy: Always
-  
+
   # Image pull secrets (overrides global setting)
   imagePullSecrets: []
-  
+
   # Node selector (overrides global setting)
   nodeSelector: {}
-  
+
   # Tolerations (overrides global setting)
   tolerations: []
-  
+
   # Resource requests and limits
   # RECOMMENDED: Uncomment and adjust for production
   # resources:
@@ -298,13 +305,13 @@ scheduler:
   #   limits:
   #     cpu: "500m"
   #     memory: "512Mi"
-  
+
   # Additional pod annotations
   podAnnotations: {}
-  
+
   # Additional pod labels
   podLabels: {}
-  
+
   # Security context for scheduler container
   securityContext:
     runAsUser: 101
@@ -313,10 +320,10 @@ scheduler:
     capabilities:
       drop:
         - ALL
-  
+
   # Additional environment variables
   extraEnvs: []
-  
+
   # Liveness probe configuration
   livenessProbe:
     exec:
@@ -326,11 +333,11 @@ scheduler:
     periodSeconds: 5
     timeoutSeconds: 1
     failureThreshold: 3
-  
+
   # PRO Features configuration
   # BunkerWeb PRO license key for advanced features
   proLicenseKey: ""
-  
+
   # Enable Prometheus metrics exporter
   # Requires BunkerWeb PRO license
   usePrometheusExporter: false
@@ -343,21 +350,21 @@ scheduler:
 controller:
   # Enable the controller (required for Ingress integration)
   enabled: true
-  
+
   # Container image configuration
   repository: bunkerity/bunkerweb-autoconf
   tag: 1.6.4
   pullPolicy: Always
-  
+
   # Image pull secrets (overrides global setting)
   imagePullSecrets: []
-  
+
   # Node selector (overrides global setting)
   nodeSelector: {}
-  
+
   # Tolerations (overrides global setting)
   tolerations: []
-  
+
   # Resource requests and limits
   # RECOMMENDED: Uncomment and adjust for production
   # resources:
@@ -367,13 +374,13 @@ controller:
   #   limits:
   #     cpu: "250m"
   #     memory: "256Mi"
-  
+
   # Additional pod annotations
   podAnnotations: {}
-  
+
   # Additional pod labels
   podLabels: {}
-  
+
   # Security context for controller container
   securityContext:
     runAsUser: 101
@@ -382,10 +389,10 @@ controller:
     capabilities:
       drop:
         - ALL
-  
+
   # Additional environment variables
   extraEnvs: []
-  
+
   # Liveness probe configuration
   livenessProbe:
     exec:
@@ -395,7 +402,7 @@ controller:
     periodSeconds: 5
     timeoutSeconds: 1
     failureThreshold: 3
-  
+
   # Readiness probe configuration
   readinessProbe:
     exec:
@@ -414,21 +421,21 @@ controller:
 ui:
   # Enable the web UI
   enabled: true
-  
+
   # Container image configuration
   repository: bunkerity/bunkerweb-ui
   tag: 1.6.4
   pullPolicy: Always
-  
+
   # Image pull secrets (overrides global setting)
   imagePullSecrets: []
-  
+
   # Node selector (overrides global setting)
   nodeSelector: {}
-  
+
   # Tolerations (overrides global setting)
   tolerations: []
-  
+
   # Resource requests and limits
   # RECOMMENDED: Uncomment and adjust for production
   # resources:
@@ -438,13 +445,13 @@ ui:
   #   limits:
   #     cpu: "250m"
   #     memory: "512Mi"
-  
+
   # Additional pod annotations
   podAnnotations: {}
-  
+
   # Additional pod labels
   podLabels: {}
-  
+
   # Security context for UI container
   securityContext:
     runAsUser: 101
@@ -453,20 +460,20 @@ ui:
     capabilities:
       drop:
         - ALL
-  
+
   # Additional environment variables
   extraEnvs: []
-  
+
   # Log collection configuration
   logs:
     # Enable log collection sidecar
     enabled: true
-    
+
     # Syslog-ng container for log collection
     repository: balabit/syslog-ng
     pullPolicy: Always
     tag: 4.8.0
-    
+
     # Persistent storage for logs
     persistence:
       size: 5Gi
@@ -483,7 +490,7 @@ ui:
     periodSeconds: 5
     timeoutSeconds: 1
     failureThreshold: 3
-  
+
   # Readiness probe configuration
   readinessProbe:
     exec:
@@ -503,50 +510,50 @@ mariadb:
   # Enable internal MariaDB instance
   # Set to false to use external database
   enabled: true
-  
+
   # Container image configuration
   repository: mariadb
-  tag: '11'
+  tag: "11"
   pullPolicy: Always
-  
+
   # Image pull secrets (overrides global setting)
   imagePullSecrets: []
-  
+
   # Node selector (overrides global setting)
   nodeSelector: {}
-  
+
   # Tolerations (overrides global setting)
   tolerations: []
-  
+
   # Persistent storage configuration
   persistence:
     # Storage size for database
     size: 5Gi
-    
+
     # Storage class for database persistence
     # Leave empty for default storage class
     # Example: "fast-ssd", "standard", "gp2"
     storageClass: ""
-  
+
   # Database configuration
   config:
     # Generate random root password
     randomRootPassword: "1"
-    
+
     # BunkerWeb database name
     database: "db"
-    
+
     # BunkerWeb database user
     user: "bunkerweb"
-    
+
     # BunkerWeb database password
     # SECURITY: Change this in production or use existingSecret
     password: "changeme"
-  
+
   # Additional arguments for MariaDB
   # Example: args: ["--character-set-server=utf8mb4"]
   args: []
-  
+
   # Resource requests and limits
   # RECOMMENDED: Uncomment and adjust for production
   # resources:
@@ -566,7 +573,7 @@ redis:
   # Enable internal Redis instance
   # Set to false to use external Redis
   enabled: true
-  
+
   # Container image configuration
   repository: redis
   tag: 7-alpine
@@ -575,29 +582,29 @@ redis:
   persistence:
     # Storage size for Redis data
     size: 1Gi
-    
+
     # Storage class for Redis persistence
     # Leave empty for default storage class
     storageClass: ""
-  
+
   # Image pull secrets (overrides global setting)
   imagePullSecrets: []
-  
+
   # Node selector (overrides global setting)
   nodeSelector: {}
-  
+
   # Tolerations (overrides global setting)
   tolerations: []
-  
+
   # Use custom Redis configuration file
   useConfigFile: false
-  
+
   # Redis configuration
   config:
     # Redis authentication password
     # SECURITY: Change this in production or use existingSecret
     password: "changeme"
-    
+
     # Custom Redis configuration
     # Applied when useConfigFile is true
     file: |
@@ -606,7 +613,7 @@ redis:
       loglevel verbose
       maxmemory 512mb
       maxmemory-policy allkeys-lru
-  
+
   # Resource requests and limits
   # RECOMMENDED: Uncomment and adjust for production
   # resources:
@@ -625,10 +632,10 @@ redis:
 ingressClass:
   # Create IngressClass resource
   enabled: true
-  
+
   # IngressClass name (used in Ingress resources)
   name: "bunkerweb"
-  
+
   # Controller identifier for this IngressClass
   controller: "bunkerweb.io/ingress-controller"
 
@@ -641,36 +648,36 @@ prometheus:
   # Enable Prometheus for metrics collection
   # Requires BunkerWeb PRO for advanced metrics
   enabled: false
-  
+
   # Container image configuration
   repository: prom/prometheus
   pullPolicy: Always
   tag: v3.3.1
-  
+
   # Number of Prometheus replicas
   replicas: 1
-  
+
   # Additional pod annotations
   podAnnotations: {}
-  
+
   # Additional pod labels
   podLabels: {}
-  
+
   # Security context for Prometheus
   securityContext:
     fsGroup: 65534
-  
+
   # Persistent storage configuration
   persistence:
     # Enable persistent storage
     enabled: true
-    
+
     # Storage size for metrics data
     size: 8Gi
-    
+
     # Storage class for metrics persistence
     storageClass: ""
-    
+
     # Access modes for the persistent volume
     accessModes:
       - ReadWriteOnce
@@ -683,34 +690,39 @@ prometheus:
 grafana:
   # Enable Grafana for dashboards
   enabled: false
-  
+
   # Container image configuration
   repository: grafana/grafana
   tag: latest
   pullPolicy: IfNotPresent
-  
+
   # Number of Grafana replicas
   replicas: 1
-  
+
   # Admin user configuration
   adminUser: admin
-  
+
   # Admin password (leave empty to generate random)
   # SECURITY: Set a strong password or use existingSecret
   adminPassword: ""
-  
+
   # Use existing secret for admin password
   # Secret should contain 'admin-password' key
   # existingSecret: "grafana-admin-secret"
-  
+  existingSecret: ""
+
+  # Additional environment variables (missing from values.yaml)
+  extraEnvs: []
+
   # Service configuration
   service:
     type: ClusterIP
     port: 3000
-  
+
   # Ingress configuration for external access
   ingress:
     enabled: false
+    # ingressClassName: ""
     # className: ""
     # annotations: {}
     #   # kubernetes.io/ingress.class: nginx
@@ -724,19 +736,19 @@ grafana:
     #   - secretName: grafana-tls
     #     hosts:
     #       - grafana.example.com
-  
+
   # Persistent storage configuration
   persistence:
     enabled: false
     size: 10Gi
-    
+
     # Storage class for dashboard persistence
     storageClass: ""
-    
+
     # Access modes for the persistent volume
     accessModes:
       - ReadWriteOnce
-    
+
     # Additional annotations for the PVC
     # annotations: {}
 
@@ -748,22 +760,23 @@ grafana:
     url: 'http://prometheus-{{ include "bunkerweb.fullname" . }}.{{ include "bunkerweb.namespace" . }}.svc:9090'
     access: proxy
     isDefault: true
-  
+
   # Additional pod annotations
   podAnnotations: {}
-  
+
   # Additional pod labels
   podLabels: {}
-  
+
   # Security context for Grafana
-  securityContext: {}
+  securityContext:
+    {}
     # fsGroup: 472
     # runAsUser: 472
     # runAsGroup: 472
-  
+
   # Additional environment variables
   # extraEnvs: []
-  
+
   # Sidecar configuration for dashboard provisioning
   # sidecar:
   #   dashboards:
@@ -781,23 +794,23 @@ networkPolicy:
   # Enable network policies for enhanced security
   # Requires a CNI that supports NetworkPolicies (e.g., Calico, Cilium)
   enabled: false
-  
+
   # Egress traffic configuration
   egress:
     # Allow traffic to pods in the same namespace
     allowSameNamespace: true
-    
+
     # Allow internet access for updates and external APIs
     allowInternet: true
-    
+
     # Ports allowed for internet access
     internetPorts: [80, 443]
-    
+
     # Allow access to database virtual network
     allowDatabaseVNet: true
-    
+
     # CIDR range for database network
     databaseVNetCIDR: "10.0.0.0/16"
-    
+
     # Database port for access
     databasePort: 3306

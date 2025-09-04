@@ -1,4 +1,4 @@
-{{- if .Values.redis.enabled -}}
+{{- if and .Values.redis.enabled .Values.redis.useConfigFile -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,13 +6,11 @@ metadata:
   namespace: {{ include "bunkerweb.namespace" . }}
   labels:
     {{- include "bunkerweb.labels" . | nindent 4 }}
-{{- if and .Values.redis.useConfigFile .Values.redis.config.file -}}
 data:
   redis.conf: |
+{{- if .Values.redis.config.file }}
     {{- .Values.redis.config.file | nindent 4 }}
-{{- else if .Values.redis.useConfigFile -}}
-data:
-  redis.conf: |
+{{- else }}
     # Basic Redis configuration for bunkerized-nginx
     
     # Network settings
@@ -99,4 +97,5 @@ data:
     # Disable potentially dangerous commands
     rename-command SHUTDOWN REDIS_SHUTDOWN
     rename-command CONFIG REDIS_CONFIG
+{{- end }}
 {{- end }}
