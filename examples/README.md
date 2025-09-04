@@ -10,7 +10,7 @@ This directory contains example configurations for common BunkerWeb deployment s
 - [`production.yaml`](production.yaml) - Production-ready setup with persistence
 - [`monitoring.yaml`](monitoring.yaml) - Full monitoring stack with Prometheus and Grafana
 
-## Futur Examples to come and open to contribution
+## Future Examples to come and open to contribution
 
 - [`high-availability.yaml`](high-availability.yaml) - HA setup with multiple replicas
 - [`external-database.yaml`](external-database.yaml) - Using external MariaDB and Redis
