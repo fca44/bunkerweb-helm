@@ -1,5 +1,5 @@
-{{- $replicaCount := int .Values.bunkerweb.replicaCount }}
-{{- if and .Values.bunkerweb.pdb.create  (gt $replicaCount 1) }}
+{{- $replicas := int .Values.bunkerweb.replicas }}
+{{- if and .Values.bunkerweb.pdb.create  (gt $replicas 1) }}
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
