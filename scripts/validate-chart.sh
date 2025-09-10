@@ -152,7 +152,7 @@ test_template_generation() {
             
             # Validate generated YAML
             if command -v yq &> /dev/null; then
-                if yq eval '.' "$output_file" > /dev/null 2>&1; then
+                if yq '.' "$output_file" > /dev/null 2>&1; then
                     log_success "    ✓ Generated YAML is valid"
                 else
                     log_error "    ✗ Generated YAML is invalid"

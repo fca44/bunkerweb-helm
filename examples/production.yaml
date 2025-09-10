@@ -1,190 +1,470 @@
-# Production-Ready BunkerWeb Configuration
-# This configuration provides a secure, scalable setup suitable for production environments
+# =============================================================================
+# BunkerWeb Production Configuration with External Services
+# =============================================================================
+# This configuration is designed for production environments using external services
+# for database, cache, and observability to ensure high availability and scalability
+#
+# Prerequisites:
+#   - External PostgreSQL/MySQL database
+#   - External Redis cluster
+#   - External Prometheus/Grafana stack (optional)
+#   - Kubernetes ingress controller
+#   - TLS certificates (cert-manager recommended)
+#
+# Usage:
+#   helm install bunkerweb-prod ./charts/bunkerweb -f examples/production-external.yaml
 
-# Global settings
-nameOverride: "bunkerweb-prod"
+# =============================================================================
+# GLOBAL CONFIGURATION
+# =============================================================================
+global:
+  nameOverride: "bunkerweb"
 
-# BunkerWeb Core Configuration
-bunkerweb:
-  kind: DaemonSet
-  hostPorts: true
-  
-  # Production resource limits
-  resources:
-    requests:
-      cpu: "2000m"
-      memory: "4096Mi"
-    limits:
-      cpu: "4000m"
-      memory: "8192Mi"
-  
-  # Enable Pod Disruption Budget
-  pdb:
-    create: true
-    minAvailable: 1
-
-# Scheduler Configuration
-scheduler:
-  resources:
-    requests:
-      cpu: "250m"
-      memory: "256Mi"
-    limits:
-      cpu: "500m"
-      memory: "512Mi"
-
-# Controller Configuration
-controller:
-  enabled: true
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "128Mi"
-    limits:
-      cpu: "250m"
-      memory: "256Mi"
-
-# Web UI Configuration
-ui:
-  enabled: true
-  
-  # Enable log collection
-  logs:
-    enabled: true
-    persistence:
-      size: 10Gi
-      storageClass: "fast-ssd"
-  
-  resources:
-    requests:
-      cpu: "100m"
-      memory: "256Mi"
-    limits:
-      cpu: "250m"
-      memory: "512Mi"
-  
-  # External access configuration
-  ingress:
-    enabled: true
-    serverName: "bunkerweb-ui.yourdomain.com"
-    tlsSecretName: "bunkerweb-ui-tls"
-    extraAnnotations:
-      cert-manager.io/cluster-issuer: "letsencrypt-prod"
-      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
-
-# Service Configuration
+# =============================================================================
+# HIGH AVAILABILITY SERVICE CONFIGURATION
+# =============================================================================
 service:
   type: LoadBalancer
   annotations:
-    # AWS Load Balancer annotations (adjust for your cloud provider)
+    # AWS Load Balancer Controller annotations (adjust for your cloud provider)
     service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
     service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    # Add your specific load balancer annotations here
 
-# Database Configuration
+# =============================================================================
+# EXTERNAL SERVICES - DISABLED FOR PRODUCTION
+# =============================================================================
+
+# External Database - Use managed service (RDS, Cloud SQL, etc.)
 mariadb:
-  enabled: true
-  
-  # Production database resources
-  resources:
-    requests:
-      cpu: "500m"
-      memory: "1024Mi"
-    limits:
-      cpu: "1000m"
-      memory: "2048Mi"
-  
-  # Persistent storage
-  persistence:
-    size: 20Gi
-    storageClass: "fast-ssd"
-  
-  # Security configuration
-  config:
-    randomRootPassword: "1"
-    database: "bunkerweb_prod"
-    user: "bunkerweb"
-    password: "CHANGE_THIS_PASSWORD"
+  enabled: false  # Use external database
 
-# Redis Configuration
+# External Redis - Use managed service (ElastiCache, MemoryStore, etc.)
 redis:
-  enabled: true
-  
-  # Production Redis resources
-  resources:
-    requests:
-      cpu: "250m"
-      memory: "512Mi"
-    limits:
-      cpu: "500m"
-      memory: "1024Mi"
-  
-  # Persistent storage
-  persistence:
-    size: 5Gi
-    storageClass: "fast-ssd"
-  
-  # Security configuration
-  config:
-    password: "CHANGE_THIS_PASSWORD"
-    file: |
-      appendonly yes
-      save 900 1
-      save 300 10
-      save 60 10000
-      loglevel notice
-      maxmemory 1gb
-      maxmemory-policy allkeys-lru
+  enabled: false  # Use external Redis
 
-# Settings
-settings:
-  # Use secrets for sensitive data (recommended)
-  existingSecret: "bunkerweb-secrets"
-  
-  kubernetes:
-    ingressClass: "bunkerweb"
-    namespaces: "default,production"
-  
-  misc:
-    dnsResolvers: "1.1.1.1 8.8.8.8"
-    apiWhitelistIp: "127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"
-
-# IngressClass
-ingressClass:
-  enabled: true
-  name: "bunkerweb"
-
-# Monitoring (optional but recommended)
+# External Monitoring - Use existing Prometheus/Grafana
 prometheus:
-  enabled: false  # Set to true to enable
-  persistence:
-    enabled: true
-    size: 50Gi
-    storageClass: "standard"
+  enabled: false  # Use external Prometheus
 
 grafana:
-  enabled: false  # Set to true to enable
-  adminPassword: "CHANGE_THIS_PASSWORD"
-  persistence:
-    enabled: true
-    size: 10Gi
-    storageClass: "standard"
-  
-  ingress:
-    enabled: false  # Set to true to enable external access
-    # hosts:
-    #   - host: grafana.yourdomain.com
-    #     paths:
-    #       - path: /
-    #         pathType: ImplementationSpecific
-    # tls:
-    #   - secretName: grafana-tls
-    #     hosts:
-    #       - grafana.yourdomain.com
+  enabled: false  # Use external Grafana
 
-# Network Security
+# =============================================================================
+# DATABASE CONFIGURATION - EXTERNAL
+# =============================================================================
+settings:
+  # External database connection (adjust for your setup)
+  database:
+    # Examples for different providers:
+    # PostgreSQL: "postgresql://username:password@postgres.example.com:5432/bunkerweb"
+    # MySQL/MariaDB: "mysql+pymysql://username:password@mysql.example.com:3306/bunkerweb"
+    # Cloud SQL: "mysql+pymysql://username:password@127.0.0.1:3306/bunkerweb" (with Cloud SQL Proxy)
+    uri: "mysql+pymysql://bunkerweb:CHANGE_ME@mysql.example.com:3306/bunkerweb"
+
+  # External Redis configuration
+  redis:
+    enabled: true
+    redisHost: "redis.example.com"  # Your Redis endpoint
+    redisPort: "6379"
+    redisUsername: ""
+    redisPassword: "CHANGE_ME"  # Use Kubernetes secret in production
+    # For Redis Cluster:
+    # redisClusterEnabled: "yes"
+    # redisClusterNodes: "redis1.example.com:6379,redis2.example.com:6379,redis3.example.com:6379"
+
+# =============================================================================
+# UI CONFIGURATION - PRODUCTION READY
+# =============================================================================
+ui:
+  enabled: true
+  
+  # Use Kubernetes secret for credentials in production
+  adminUsername: "admin"
+  adminPassword: ""  # Leave empty to use secret
+  
+  # Production ingress configuration
+  ingress:
+    enabled: true
+    className: "nginx"  # or your ingress class
+    annotations:
+      cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      # Security headers
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        more_set_headers "X-Frame-Options: DENY";
+        more_set_headers "X-Content-Type-Options: nosniff";
+        more_set_headers "X-XSS-Protection: 1; mode=block";
+    hosts:
+      - host: bunkerweb.yourdomain.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: bunkerweb-ui-tls
+        hosts:
+          - bunkerweb.yourdomain.com
+
+# =============================================================================
+# SCHEDULER CONFIGURATION - PRODUCTION SECURITY
+# =============================================================================
+scheduler:
+  features:
+    # =============================================================================
+    # GLOBAL SETTINGS - MAXIMUM SECURITY
+    # =============================================================================
+    global:
+      securityMode: "block"
+      disableDefaultServer: "yes"
+      disableDefaultServerStrictSni: "yes"  # Strict SNI for production
+
+    # =============================================================================
+    # WEB APPLICATION FIREWALL - COMPREHENSIVE PROTECTION
+    # =============================================================================
+    modsecurity:
+      useModsecurity: "yes"
+      useModsecurityCrs: "yes"
+      modsecurityCrsVersion: "4"
+      modsecuritySecRuleEngine: "On"
+      useModsecurityCrsPlugins: "yes"
+      # Production-ready plugins
+      modsecurityCrsPlugins: "fake-bot wordpress-rule-exclusions-plugin drupal-rule-exclusions-plugin"
+
+    # =============================================================================
+    # ANTIBOT PROTECTION - PRODUCTION TUNED
+    # =============================================================================
+    antibot:
+      useAntibot: "yes"
+      antibotUri: "/antibot"
+      antibotTimeResolve: "10"  # Stricter for production
+      antibotTimeValid: "7200"  # 2 hours validity
+
+    # =============================================================================
+    # RATE LIMITING - PRODUCTION OPTIMIZED
+    # =============================================================================
+    rateLimit:
+      useLimitReq: "yes"
+      limitReqRate: "10r/s"  # Conservative for production
+      limitReqUrl: "/"
+      useLimitConn: "yes"
+      limitConnMaxHttp1: "10"    # Lower for security
+      limitConnMaxHttp2: "50"
+      limitConnMaxHttp3: "50"
+
+    # =============================================================================
+    # IP BLACKLIST - COMPREHENSIVE THREAT PROTECTION
+    # =============================================================================
+    blacklist:
+      useBlacklist: "yes"
+      blacklistCommunityLists: "ip:danmeuk-tor-exit ua:mitchellkrogza-bad-user-agents asn:t1-malware-asn"
+
+    whitelist:
+      useWhitelist: "no"  # Consider enabling for specific use cases
+
+    # =============================================================================
+    # COUNTRY BLOCKING - CUSTOMIZE FOR YOUR NEEDS
+    # =============================================================================
+    geoBlocking:
+      # Example: Allow only specific countries
+      # whitelistCountry: "US CA GB FR DE"
+      # Block specific high-risk countries
+      # blacklistCountry: "CN RU IR KP"
+      whitelistCountry: ""
+      blacklistCountry: ""
+
+    # =============================================================================
+    # BAD BEHAVIOR DETECTION - STRICT PRODUCTION SETTINGS
+    # =============================================================================
+    badBehavior:
+      useBadBehavior: "yes"
+      badBehaviorStatusCodes: "400 401 403 404 405 413 429 444"
+      badBehaviorThreshold: "5"    # Stricter threshold
+      badBehaviorCountTime: "60"
+      badBehaviorBanTime: "86400"  # 24 hour ban
+
+    # =============================================================================
+    # SSL/TLS - PRODUCTION GRADE SECURITY
+    # =============================================================================
+    ssl:
+      listenHttps: "yes"
+      sslProtocols: "TLSv1.3"  # Only TLS 1.3 for maximum security
+      sslCiphersLevel: "modern"
+      autoRedirectHttpToHttps: "yes"
+
+    # Let's Encrypt with cert-manager
+    letsEncrypt:
+      autoLetsEncrypt: "no"  # Use cert-manager instead
+
+    # Custom SSL certificates managed by cert-manager
+    customSsl:
+      useCustomSsl: "no"
+
+    # =============================================================================
+    # PERFORMANCE OPTIMIZATIONS
+    # =============================================================================
+    compression:
+      useGzip: "yes"
+      gzipTypes: "text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json application/wasm"
+      useBrotli: "yes"
+
+    clientCache:
+      useClientCache: "yes"
+      clientCacheExtensions: "jpg jpeg png bmp ico svg tiff css js otf ttf eot woff woff2 webp avif"
+      clientCacheEtag: "yes"
+
+    # =============================================================================
+    # SECURITY HEADERS - PRODUCTION HARDENED
+    # =============================================================================
+    securityHeaders:
+      strictTransportSecurity: "max-age=63072000; includeSubDomains; preload"
+      contentSecurityPolicy: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+      contentSecurityPolicyReportOnly: "no"
+      xFrameOptions: "DENY"
+      xContentTypeOptions: "nosniff"
+      referrerPolicy: "strict-origin-when-cross-origin"
+      removeHeaders: "Server X-Powered-By X-AspNet-Version X-Generator X-Drupal-Cache X-Varnish Via"
+
+    # =============================================================================
+    # CORS - RESTRICTIVE FOR PRODUCTION
+    # =============================================================================
+    cors:
+      useCors: "no"  # Enable only if needed
+      # corsAllowOrigin: "https://yourdomain.com"
+      # corsAllowMethods: "GET POST PUT DELETE"
+      # corsAllowHeaders: "Content-Type Authorization"
+
+    # =============================================================================
+    # THREAT INTELLIGENCE - PRODUCTION ENABLED
+    # =============================================================================
+    dnsbl:
+      useDnsbl: "yes"
+      dnsblList: "bl.spamcop.net zen.spamhaus.org"
+
+    bunkernet:
+      useBunkernet: "yes"
+      bunkernetServer: "https://api.bunkerweb.io"
+
+    # =============================================================================
+    # SESSION MANAGEMENT - PRODUCTION SECURE
+    # =============================================================================
+    sessions:
+      sessionsName: "bwsession"  # Don't use default name
+      sessionsIdlingTimeout: "900"   # 15 minutes
+      sessionsRollingTimeout: "1800" # 30 minutes
+      sessionsAbsoluteTimeout: "7200" # 2 hours
+      sessionsCheckIp: "yes"
+      sessionsCheckUserAgent: "yes"
+
+    # =============================================================================
+    # METRICS AND MONITORING - PRODUCTION READY
+    # =============================================================================
+    metrics:
+      useMetrics: "yes"
+      metricsMemorySize: "64m"  # More memory for production
+      metricsMaxBlockedRequests: "5000"
+      metricsSaveToRedis: "yes"
+
+    # =============================================================================
+    # ERROR PAGES - CUSTOM HANDLING
+    # =============================================================================
+    errorPages:
+      interceptedErrorCodes: "400 401 403 404 405 413 429 500 501 502 503 504"
+
+    # =============================================================================
+    # SECURITY UTILITIES - PRODUCTION ENABLED
+    # =============================================================================
+    robotstxt:
+      useRobotstxt: "yes"
+      robotstxtContent: |
+        User-agent: *
+        Disallow: /admin/
+        Disallow: /api/private/
+        Disallow: /internal/
+        Allow: /
+
+    securitytxt:
+      useSecuritytxt: "yes"
+      securitytxtContact: "mailto:security@yourdomain.com"
+      securitytxtExpires: "2025-12-31T23:59:59.000Z"
+      securitytxtPreferredLanguages: "en"
+      securitytxtCanonical: "https://yourdomain.com/.well-known/security.txt"
+
+    # =============================================================================
+    # BACKUP CONFIGURATION - PRODUCTION BACKUP
+    # =============================================================================
+    backup:
+      useBackup: "yes"
+      backupSchedule: "daily"
+      backupRotation: "30"  # Keep 30 days
+      backupDirectory: "/var/lib/bunkerweb/backups"
+
+  # Production resource allocation
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+# =============================================================================
+# HIGH AVAILABILITY CONFIGURATION
+# =============================================================================
+replicaCount: 3  # Minimum 3 for HA
+
+# =============================================================================
+# PRODUCTION RESOURCE LIMITS
+# =============================================================================
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi
+
+# Controller resources for production
+controller:
+  replicaCount: 2  # HA controller
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+# =============================================================================
+# AUTOSCALING - PRODUCTION READY
+# =============================================================================
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  # Additional metrics for scaling (requires metrics-server)
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+
+# =============================================================================
+# NETWORK POLICIES - PRODUCTION SECURITY
+# =============================================================================
 networkPolicy:
   enabled: true
-  egress:
-    allowSameNamespace: true
-    allowInternet: true
-    internetPorts: [80, 443, 53]
+  ingress:
+    # Only allow ingress from ingress controller namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+
+# =============================================================================
+# POD DISRUPTION BUDGET - HIGH AVAILABILITY
+# =============================================================================
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2  # Always keep at least 2 pods running
+
+# =============================================================================
+# AFFINITY AND TOPOLOGY - PRODUCTION SPREAD
+# =============================================================================
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - bunkerweb
+        topologyKey: kubernetes.io/hostname
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - bunkerweb
+          topologyKey: topology.kubernetes.io/zone
+
+# =============================================================================
+# TOLERATIONS - PRODUCTION NODE SCHEDULING
+# =============================================================================
+tolerations:
+  # Example: tolerate dedicated nodes for security workloads
+  # - key: "security-workload"
+  #   operator: "Equal"
+  #   value: "true"
+  #   effect: "NoSchedule"
+
+# =============================================================================
+# NODE SELECTOR - PRODUCTION NODE ASSIGNMENT
+# =============================================================================
+nodeSelector: {}
+  # Example: Schedule on nodes with specific labels
+  # security-tier: "high"
+  # node-type: "security"
+
+# =============================================================================
+# SECURITY CONTEXT - PRODUCTION HARDENED
+# =============================================================================
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+  runAsGroup: 101
+  fsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 101
+  runAsGroup: 101
+
+# =============================================================================
+# MONITORING AND OBSERVABILITY INTEGRATION
+# =============================================================================
+serviceMonitor:
+  # Enable if using Prometheus Operator
+  enabled: false
+  # namespace: monitoring
+  # interval: 30s
+  # scrapeTimeout: 10s
+  # labels:
+  #   prometheus: kube-prometheus
+
+# =============================================================================
+# EXTERNAL SECRETS INTEGRATION (Optional)
+# =============================================================================
+# If using external-secrets operator or similar
+externalSecrets:
+  enabled: false
+  # Configure external secret store integration
+  # secretStore: "vault"
+  # vaultPath: "secret/bunkerweb"

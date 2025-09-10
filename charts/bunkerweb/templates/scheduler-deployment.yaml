@@ -86,6 +86,7 @@ spec:
               value: {{ .Values.scheduler.proLicenseKey | quote }}
             {{- end }}
             {{- include "bunkerweb.redisEnv" . | nindent 12 }}
+            {{- include "bunkerweb.featureEnvs" . | nindent 12 }}
             {{- if .Values.scheduler.extraEnvs }}
               {{- toYaml .Values.scheduler.extraEnvs | nindent 12 }}
             {{- end }}

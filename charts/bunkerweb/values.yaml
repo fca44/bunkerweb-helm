@@ -277,9 +277,6 @@ bunkerweb:
   ## PodDisruptionBudget for default backend
   ## bunkerweb Pod Disruption Budget configuration
   ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
-  ## @param bunkerweb.pdb.create Enable Pod Disruption Budget configuration
-  ## @param bunkerweb.pdb.minAvailable Minimum number/percentage of Default backend pods that should remain scheduled
-  ## @param bunkerweb.pdb.maxUnavailable Maximum number/percentage of Default backend pods that should remain scheduled
   ##
   pdb:
     # Enable creation of Pod Disruption Budget
@@ -339,7 +336,443 @@ scheduler:
       drop:
         - ALL
 
-  # Additional environment variables
+  
+  # BunkerWeb feature configuration
+  # These settings control the behavior of BunkerWeb security features
+  # These features will be applied by default on any new services, but could be overwritten on a per service basis
+  features:
+    # =============================================================================
+    # GLOBAL SETTINGS
+    # =============================================================================
+    global:
+      # Security mode: "detect" for monitoring only, "block" for active protection
+      securityMode: "block"
+      # Default server protection
+      disableDefaultServer: "no"
+      disableDefaultServerStrictSni: "no"
+      
+    # =============================================================================
+    # MODSECURITY WAF
+    # =============================================================================
+    modsecurity:
+      # Enable ModSecurity Web Application Firewall
+      useModsecurity: "yes"
+      # Enable OWASP Core Rule Set
+      useModsecurityCrs: "yes"
+      # CRS version: "3", "4", or "nightly"
+      modsecurityCrsVersion: "4"
+      # Rule engine: "On", "DetectionOnly", or "Off"
+      modsecuritySecRuleEngine: "On"
+      # Enable CRS plugins for enhanced protection
+      useModsecurityCrsPlugins: "yes"
+      # List of CRS plugins to install (space-separated)
+      modsecurityCrsPlugins: ""
+      
+    # =============================================================================
+    # ANTIBOT PROTECTION
+    # =============================================================================
+    antibot:
+      # Antibot challenge type: "no", "cookie", "javascript", "captcha", "recaptcha", "hcaptcha", "turnstile", "mcaptcha"
+      useAntibot: "no"
+      # Challenge URI (must be unique and not used by your application)
+      antibotUri: "/challenge"
+      # Time limit to complete challenge (seconds)
+      antibotTimeResolve: "60"
+      # Challenge validity duration (seconds)
+      antibotTimeValid: "86400"
+      # IPs to bypass antibot challenges (space-separated)
+      antibotIgnoreIp: ""
+      # URIs to bypass antibot challenges (regex patterns, space-separated)
+      antibotIgnoreUri: ""
+      
+    # =============================================================================
+    # RATE LIMITING
+    # =============================================================================
+    rateLimit:
+      # Enable request rate limiting
+      useLimitReq: "no"
+      # Rate limit (e.g., "2r/s", "60r/m")
+      limitReqRate: "2r/s"
+      # URL pattern to apply rate limiting
+      limitReqUrl: "/"
+      # Enable connection limiting
+      useLimitConn: "no"
+      # Max HTTP/1.1 connections per IP
+      limitConnMaxHttp1: "10"
+      # Max HTTP/2 connections per IP
+      limitConnMaxHttp2: "100"
+      # Max HTTP/3 connections per IP
+      limitConnMaxHttp3: "100"
+      
+    # =============================================================================
+    # BLACKLIST/WHITELIST
+    # =============================================================================
+    blacklist:
+      # Enable blacklist functionality
+      useBlacklist: "yes"
+      # Community blacklists to use
+      blacklistCommunityLists: "ip:danmeuk-tor-exit ua:mitchellkrogza-bad-user-agents ip:laurent-minne-data-shield-aggressive"
+      # Manual IP blacklist (space-separated)
+      blacklistIp: ""
+      # Blacklist URLs for automatic updates
+      blacklistIpUrls: ""
+      
+    whitelist:
+      # Enable whitelist functionality
+      useWhitelist: "no"
+      # Manual IP whitelist (space-separated CIDR)
+      whitelistIp: ""
+      # Whitelist URLs for automatic updates
+      whitelistIpUrls: ""
+      
+    # =============================================================================
+    # COUNTRY BLOCKING
+    # =============================================================================
+    geoBlocking:
+      # Allowed countries (ISO 3166-1 alpha-2 codes, space-separated)
+      whitelistCountry: ""
+      # Blocked countries (ISO 3166-1 alpha-2 codes, space-separated)
+      blacklistCountry: ""
+      
+    # =============================================================================
+    # BAD BEHAVIOR DETECTION
+    # =============================================================================
+    badBehavior:
+      # Enable bad behavior detection
+      useBadBehavior: "yes"
+      # HTTP status codes considered "bad" (space-separated)
+      badBehaviorStatusCodes: "400 401 403 404 405 429 444"
+      # Threshold before banning IP
+      badBehaviorThreshold: "10"
+      # Time window for counting bad requests (seconds)
+      badBehaviorCountTime: "60"
+      # Ban duration (seconds, 0 = permanent)
+      badBehaviorBanTime: "86400"
+      
+    # =============================================================================
+    # SSL/TLS CONFIGURATION
+    # =============================================================================
+    ssl:
+      # Enable HTTPS listening
+      listenHttps: "yes"
+      # SSL protocols to support
+      sslProtocols: "TLSv1.2 TLSv1.3"
+      # Cipher security level: "old", "intermediate", "modern"
+      sslCiphersLevel: "modern"
+      # Auto-redirect HTTP to HTTPS
+      autoRedirectHttpToHttps: "yes"
+      
+    # Let's Encrypt configuration
+    letsEncrypt:
+      # Enable automatic Let's Encrypt certificates
+      autoLetsEncrypt: "no"
+      # Email for Let's Encrypt notifications
+      emailLetsEncrypt: ""
+      # Challenge type: "http" or "dns"
+      letsEncryptChallenge: "http"
+      # DNS provider for DNS challenges
+      letsEncryptDnsProvider: ""
+      # Enable wildcard certificates (DNS challenges only)
+      useLetsEncryptWildcard: "no"
+      
+    # Custom SSL certificate
+    customSsl:
+      # Use custom SSL certificates
+      useCustomSsl: "no"
+      # Certificate priority: "file" or "data"
+      customSslCertPriority: "file"
+      # Certificate file path
+      customSslCert: ""
+      # Private key file path
+      customSslKey: ""
+      
+    # =============================================================================
+    # COMPRESSION
+    # =============================================================================
+    compression:
+      # Enable GZIP compression
+      useGzip: "no"
+      # GZIP compression level (1-9)
+      gzipCompLevel: "5"
+      # Minimum response size for compression (bytes)
+      gzipMinLength: "1000"
+      # Enable Brotli compression
+      useBrotli: "no"
+      # Brotli compression level (0-11)
+      brotliCompLevel: "6"
+      
+    # =============================================================================
+    # CLIENT CACHING
+    # =============================================================================
+    clientCache:
+      # Enable client-side caching
+      useClientCache: "no"
+      # File extensions to cache (pipe-separated)
+      clientCacheExtensions: "jpg|jpeg|png|gif|css|js|svg|woff|woff2"
+      # Cache-Control header value
+      clientCacheControl: "public, max-age=86400"
+      # Enable ETags
+      clientCacheEtag: "yes"
+      
+    # =============================================================================
+    # REVERSE PROXY
+    # =============================================================================
+    reverseProxy:
+      # Enable reverse proxy functionality
+      useReverseProxy: "no"
+      # Backend server URLs (multiple values supported with suffix _1, _2, etc.)
+      reverseProxyHost: ""
+      # URL paths to proxy (multiple values supported with suffix _1, _2, etc.)
+      reverseProxyUrl: "/"
+      # Connection timeout
+      reverseProxyConnectTimeout: "10s"
+      # Send timeout
+      reverseProxySendTimeout: "60s"
+      # Read timeout
+      reverseProxyReadTimeout: "60s"
+      
+    # =============================================================================
+    # REAL IP DETECTION
+    # =============================================================================
+    realIp:
+      # Enable real IP detection (behind proxy/load balancer)
+      useRealIp: "no"
+      # Trusted proxy IPs (space-separated CIDR)
+      realIpFrom: ""
+      # Header containing real IP
+      realIpHeader: "X-Forwarded-For"
+      # Enable recursive IP detection
+      realIpRecursive: "yes"
+      # Enable PROXY protocol support
+      useProxyProtocol: "no"
+      
+    # =============================================================================
+    # SECURITY HEADERS
+    # =============================================================================
+    headers:
+      # HSTS header
+      strictTransportSecurity: "max-age=63072000; includeSubDomains; preload"
+      # Content Security Policy
+      contentSecurityPolicy: "object-src 'none'; form-action 'self'; frame-ancestors 'self';"
+      # CSP report-only mode
+      contentSecurityPolicyReportOnly: "no"
+      # X-Frame-Options header
+      xFrameOptions: "SAMEORIGIN"
+      # X-Content-Type-Options header
+      xContentTypeOptions: "nosniff"
+      # Referrer Policy
+      referrerPolicy: "strict-origin-when-cross-origin"
+      # Headers to remove (space-separated)
+      removeHeaders: "Server X-Powered-By"
+      # Custom headers (multiple values supported with suffix _1, _2, etc.)
+      customHeader: ""
+      
+    # =============================================================================
+    # CORS CONFIGURATION
+    # =============================================================================
+    cors:
+      # Enable CORS
+      useCors: "no"
+      # Allowed origins (regex pattern or "self" or "*")
+      corsAllowOrigin: "self"
+      # Allowed HTTP methods
+      corsAllowMethods: "GET, POST, OPTIONS"
+      # Allowed headers
+      corsAllowHeaders: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+      # Allow credentials
+      corsAllowCredentials: "no"
+      
+    # =============================================================================
+    # DNSBL CHECKING
+    # =============================================================================
+    dnsbl:
+      # Enable DNSBL checking
+      useDnsbl: "no"
+      # DNSBL servers to query (space-separated)
+      dnsblList: "bl.blocklist.de sbl.spamhaus.org xbl.spamhaus.org"
+      
+    # =============================================================================
+    # BUNKERNET THREAT INTELLIGENCE
+    # =============================================================================
+    bunkerNet:
+      # Enable BunkerNet threat intelligence
+      useBunkernet: "yes"
+      # BunkerNet API server
+      bunkernetServer: "https://api.bunkerweb.io"
+      
+    # =============================================================================
+    # SESSION MANAGEMENT
+    # =============================================================================
+    sessions:
+      # Session secret key (leave empty to auto-generate)
+      sessionsSecret: ""
+      # Session cookie name
+      sessionsName: "bwcookie"
+      # Idle timeout (seconds)
+      sessionsIdlingTimeout: "1800"
+      # Rolling timeout (seconds)
+      sessionsRollingTimeout: "3600"
+      # Absolute timeout (seconds)
+      sessionsAbsoluteTimeout: "86400"
+      # Check IP address consistency
+      sessionsCheckIp: "yes"
+      # Check User-Agent consistency
+      sessionsCheckUserAgent: "yes"
+      
+    # =============================================================================
+    # METRICS AND MONITORING
+    # =============================================================================
+    metrics:
+      # Enable metrics collection
+      useMetrics: "yes"
+      # Memory size for metrics storage
+      metricsMemorySize: "16m"
+      # Max blocked requests per worker
+      metricsMaxBlockedRequests: "1000"
+      # Save metrics to Redis
+      metricsSaveToRedis: "yes"
+      
+    # =============================================================================
+    # AUTH BASIC
+    # =============================================================================
+    authBasic:
+      # Enable HTTP Basic Authentication
+      useAuthBasic: "no"
+      # Protection scope: "sitewide" or specific path
+      authBasicLocation: "sitewide"
+      # Username (multiple values supported with suffix _1, _2, etc.)
+      authBasicUser: ""
+      # Password (multiple values supported with suffix _1, _2, etc.)
+      authBasicPassword: ""
+      # Authentication prompt text
+      authBasicText: "Restricted area"
+      
+    # =============================================================================
+    # REDIRECTS
+    # =============================================================================
+    redirect:
+      # Path to redirect from
+      redirectFrom: ""
+      # Destination URL
+      redirectTo: ""
+      # Preserve request URI
+      redirectToRequestUri: "yes"
+      # HTTP status code for redirect
+      redirectToStatusCode: "301"
+      
+    # =============================================================================
+    # ERROR PAGES
+    # =============================================================================
+    errors:
+      # Custom error page mappings (ERROR_CODE=/path/to/file.html)
+      errors: ""
+      # HTTP error codes to intercept
+      interceptedErrorCodes: "400 401 403 404 405 413 429 500 501 502 503 504"
+      
+    # =============================================================================
+    # HTML INJECTION
+    # =============================================================================
+    htmlInjection:
+      # HTML to inject in <head> section
+      injectHead: ""
+      # HTML to inject before </body>
+      injectBody: ""
+      
+    # =============================================================================
+    # ROBOTS.TXT
+    # =============================================================================
+    robotsTxt:
+      # Enable robots.txt generation
+      useRobotsTxt: "no"
+      # DarkVisitors API token
+      robotsTxtDarkvisitorsToken: ""
+      # Community lists to include
+      robotsTxtCommunityLists: ""
+      # Manual robots.txt rules (multiple values supported)
+      robotsTxtRule: ""
+      # Sitemap URLs (multiple values supported)
+      robotsTxtSitemap: ""
+      
+    # =============================================================================
+    # SECURITY.TXT
+    # =============================================================================
+    securityTxt:
+      # Enable security.txt file
+      useSecurityTxt: "no"
+      # Contact information (multiple values supported)
+      securityTxtContact: ""
+      # Expiration date (ISO 8601 format)
+      securityTxtExpires: ""
+      # Security policy URL
+      securityTxtPolicy: ""
+      
+    # =============================================================================
+    # CROWDSEC INTEGRATION
+    # =============================================================================
+    crowdSec:
+      # Enable CrowdSec integration
+      useCrowdSec: "no"
+      # CrowdSec Local API URL
+      crowdSecApi: "http://crowdsec:8080"
+      # CrowdSec API key
+      crowdSecApiKey: ""
+      # Operation mode: "live" or "stream"
+      crowdSecMode: "live"
+      # AppSec component URL (optional)
+      crowdSecAppsecUrl: ""
+      
+    # =============================================================================
+    # PHP INTEGRATION
+    # =============================================================================
+    php:
+      # Remote PHP-FPM host
+      remotePhp: ""
+      # Remote PHP-FPM port
+      remotePhpPort: "9000"
+      # Remote PHP-FPM path
+      remotephpPath: ""
+      # Local PHP-FPM socket
+      localPhp: ""
+      # Local PHP-FPM path
+      localPhpPath: ""
+      
+    # =============================================================================
+    # GREYLIST (CONDITIONAL ACCESS)
+    # =============================================================================
+    greylist:
+      # Enable greylist functionality
+      useGreylist: "no"
+      # IP addresses to greylist (space-separated CIDR)
+      greylistIp: ""
+      # Greylist URLs for automatic updates
+      greylistIpUrls: ""
+      
+    # =============================================================================
+    # REVERSE SCAN
+    # =============================================================================
+    reverseScan:
+      # Enable client port scanning
+      useReverseScan: "no"
+      # Ports to scan on client (space-separated)
+      reverseScanPorts: "22 80 443 3128 8000 8080"
+      # Scan timeout (milliseconds)
+      reverseScanTimeout: "500"
+      
+    # =============================================================================
+    # BACKUP CONFIGURATION
+    # =============================================================================
+    backup:
+      # Enable backup functionality
+      useBackup: "yes"
+      # Backup frequency: "daily", "weekly", "monthly"
+      backupSchedule: "daily"
+      # Number of backups to retain
+      backupRotation: "7"
+      # Backup directory
+      backupDirectory: "/var/lib/bunkerweb/backups"
+
+  # Additional environment variables for advanced configuration
+  # These will be merged with the feature configuration above
   extraEnvs: []
 
   # Liveness probe configuration

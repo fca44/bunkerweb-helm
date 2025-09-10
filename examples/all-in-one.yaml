@@ -1,0 +1,403 @@
+# =============================================================================
+# BunkerWeb All-in-One Test Configuration
+# =============================================================================
+# This configuration deploys a complete BunkerWeb stack for testing purposes
+# Everything runs in the cluster with internal components
+# 
+# Usage:
+#   helm install bunkerweb-test ./charts/bunkerweb -f examples/all-in-one-test.yaml
+#
+# Access:
+#   - BunkerWeb UI: kubectl port-forward svc/ui-bunkerweb-test 7000:7000
+#   - Grafana: kubectl port-forward svc/grafana-bunkerweb-test 3000:3000
+#   - Prometheus: kubectl port-forward svc/prometheus-bunkerweb-test 9090:9090
+
+# =============================================================================
+# GLOBAL CONFIGURATION
+# =============================================================================
+global:
+  # Use a consistent release name
+  nameOverride: "bunkerweb-aio"
+  
+# =============================================================================
+# BUNKERWEB MAIN SERVICE
+# =============================================================================
+service:
+  # Expose via NodePort for easy testing
+  type: NodePort
+  http:
+    nodePort: 30080
+  https:
+    nodePort: 30443
+  annotations: {}
+
+# =============================================================================
+# BUNKERWEB INSTANCE CONFIGURATION
+# =============================================================================
+bunkerweb:
+  # Deploy as Deployment for testing (easier to manage than DaemonSet)
+  kind: Deployment
+  
+  # Number of replicas for testing
+  replicas: 1
+  
+  # Enable BunkerWeb instance management
+  enableInstance: true
+
+  # podDisruptionBudget disabled for testing
+  pdb:
+    create: false
+  # Don't use host ports in test environment
+  hostPorts: false
+  
+  # Resource configuration for testing environment
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+  
+  # Anti-affinity for better distribution
+  podAntiAffinityPreset: "soft"
+  
+  # Health check configuration
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+    
+  readinessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+# =============================================================================
+# INTERNAL COMPONENTS - ALL ENABLED FOR TESTING
+# =============================================================================
+
+# Database (MariaDB) - Internal for testing
+mariadb:
+  enabled: true
+  # Use persistent storage for data safety during testing
+  persistence:
+    enabled: true
+    size: 10Gi
+
+# Cache (Redis) - Internal for testing  
+redis:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 5Gi
+
+# =============================================================================
+# MONITORING STACK - FULL INTERNAL SETUP
+# =============================================================================
+
+# Prometheus for metrics collection
+prometheus:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 10Gi
+  service:
+    type: ClusterIP
+
+# Grafana for visualization
+grafana:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 5Gi
+  service:
+    type: ClusterIP
+  # Default admin credentials for testing
+  adminUser: admin
+  adminPassword: test123
+
+# =============================================================================
+# UI CONFIGURATION
+# =============================================================================
+ui:
+  enabled: true
+  # Test credentials - change in production!
+  adminUsername: "admin"
+  adminPassword: "bunkerweb123!"
+  
+  # Enable ingress for UI access
+  ingress:
+    enabled: true
+    className: "bunkerweb"
+    hosts:
+      - host: bunkerweb-ui.local
+        paths:
+          - path: /
+            pathType: Prefix
+    # For testing with self-signed certs
+    tls: []
+
+# =============================================================================
+# SCHEDULER CONFIGURATION WITH COMPREHENSIVE SECURITY FEATURES
+# =============================================================================
+scheduler:
+  features:
+    # =============================================================================
+    # GLOBAL SETTINGS - STRICT SECURITY FOR TESTING
+    # =============================================================================
+    global:
+      securityMode: "detect"  # block / detect - Active protection or detection only mode
+      disableDefaultServer: "yes"  # Security hardening
+      disableDefaultServerStrictSni: "no"
+
+    # =============================================================================
+    # WEB APPLICATION FIREWALL - FULL PROTECTION
+    # =============================================================================
+    modsecurity:
+      useModsecurity: "yes"
+      useModsecurityCrs: "yes"
+      modsecurityCrsVersion: "4"
+      modsecuritySecRuleEngine: "On"
+      useModsecurityCrsPlugins: "yes"
+      # Test with common attack patterns
+      modsecurityCrsPlugins: "fake-bot wordpress-rule-exclusions-plugin"
+
+    # =============================================================================
+    # ANTIBOT PROTECTION - ENABLED FOR TESTING
+    # =============================================================================
+    antibot:
+      useAntibot: "yes"
+      antibotUri: "/bot-check"
+      antibotTimeResolve: "5"
+      antibotTimeValid: "3600"
+
+    # =============================================================================
+    # RATE LIMITING - MODERATE FOR TESTING
+    # =============================================================================
+    rateLimit:
+      useLimitReq: "yes"
+      limitReqRate: "20r/s"  # Allow more requests for testing
+      limitReqUrl: "/"
+      useLimitConn: "yes"
+      limitConnMaxHttp1: "50"
+      limitConnMaxHttp2: "200"
+      limitConnMaxHttp3: "200"
+
+    # =============================================================================
+    # IP BLACKLIST - THREAT INTELLIGENCE
+    # =============================================================================
+    blacklist:
+      useBlacklist: "yes"
+      blacklistCommunityLists: "ip:danmeuk-tor-exit ua:mitchellkrogza-bad-user-agents"
+
+    whitelist:
+      useWhitelist: "no"
+
+    # =============================================================================
+    # COUNTRY BLOCKING - DISABLED FOR GLOBAL TESTING
+    # =============================================================================
+    geoBlocking:
+      whitelistCountry: ""
+      blacklistCountry: ""
+
+    # =============================================================================
+    # BAD BEHAVIOR DETECTION - ACTIVE MONITORING
+    # =============================================================================
+    badBehavior:
+      useBadBehavior: "yes"
+      badBehaviorStatusCodes: "400 401 403 404 405 429 444"
+      badBehaviorThreshold: "10"
+      badBehaviorCountTime: "60"
+      badBehaviorBanTime: "3600"  # 1 hour ban for testing
+
+    # =============================================================================
+    # SSL/TLS - SECURE CONFIGURATION
+    # =============================================================================
+    ssl:
+      listenHttps: "yes"
+      sslProtocols: "TLSv1.2 TLSv1.3"
+      sslCiphersLevel: "modern"
+      autoRedirectHttpToHttps: "yes"
+
+    # Let's Encrypt disabled for testing (use manual certs)
+    letsEncrypt:
+      autoLetsEncrypt: "no"
+
+    # Custom SSL disabled for testing
+    customSsl:
+      useCustomSsl: "no"
+
+    # =============================================================================
+    # COMPRESSION - ENABLED FOR PERFORMANCE TESTING
+    # =============================================================================
+    compression:
+      useGzip: "yes"
+      gzipTypes: "text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json"
+      useBrotli: "yes"
+
+    # =============================================================================
+    # CLIENT CACHING - ENABLED FOR PERFORMANCE
+    # =============================================================================
+    clientCache:
+      useClientCache: "yes"
+      clientCacheExtensions: "jpg jpeg png bmp ico svg tiff css js otf ttf eot woff woff2"
+      clientCacheEtag: "yes"
+
+    # =============================================================================
+    # SECURITY HEADERS - FULL PROTECTION
+    # =============================================================================
+    securityHeaders:
+      strictTransportSecurity: "max-age=63072000; includeSubDomains; preload"
+      contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';"
+      contentSecurityPolicyReportOnly: "no"
+      xFrameOptions: "SAMEORIGIN"
+      xContentTypeOptions: "nosniff"
+      referrerPolicy: "strict-origin-when-cross-origin"
+      removeHeaders: "Server X-Powered-By X-AspNet-Version"
+
+    # =============================================================================
+    # CORS - PERMISSIVE FOR TESTING
+    # =============================================================================
+    cors:
+      useCors: "yes"
+      corsAllowOrigin: "*"
+      corsAllowMethods: "GET POST PUT DELETE OPTIONS"
+      corsAllowHeaders: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+
+    # =============================================================================
+    # THREAT INTELLIGENCE - BUNKERNET ENABLED
+    # =============================================================================
+    dnsbl:
+      useDnsbl: "no"  # Disabled to avoid external dependencies in tests
+
+    bunkernet:
+      useBunkernet: "yes"
+      bunkernetServer: "https://api.bunkerweb.io"
+
+    # =============================================================================
+    # SESSION MANAGEMENT - SECURE DEFAULTS
+    # =============================================================================
+    sessions:
+      sessionsName: "bwcookie"
+      sessionsIdlingTimeout: "1800"
+      sessionsRollingTimeout: "3600"
+      sessionsAbsoluteTimeout: "86400"
+      sessionsCheckIp: "yes"
+      sessionsCheckUserAgent: "yes"
+
+    # =============================================================================
+    # METRICS AND MONITORING - FULL ENABLED
+    # =============================================================================
+    metrics:
+      useMetrics: "yes"
+      metricsMemorySize: "32m"  # More memory for testing
+      metricsMaxBlockedRequests: "2000"
+      metricsSaveToRedis: "yes"
+
+    # =============================================================================
+    # ERROR PAGES - CUSTOM HANDLING
+    # =============================================================================
+    errorPages:
+      interceptedErrorCodes: "400 401 403 404 405 413 429 500 501 502 503 504"
+
+    # =============================================================================
+    # SECURITY UTILITIES
+    # =============================================================================
+    robotstxt:
+      useRobotstxt: "yes"
+      robotstxtContent: |
+        User-agent: *
+        Disallow: /admin/
+        Disallow: /api/
+        Allow: /
+
+    securitytxt:
+      useSecuritytxt: "yes"
+      securitytxtContact: "mailto:security@example.com"
+      securitytxtExpires: "2026-12-31T23:59:59.000Z"
+
+    # =============================================================================
+    # BACKUP CONFIGURATION - ENABLED FOR DATA SAFETY
+    # =============================================================================
+    backup:
+      useBackup: "yes"
+      backupSchedule: "daily"
+      backupRotation: "7"
+      backupDirectory: "/var/lib/bunkerweb/backups"
+
+  # Scheduler resource limits
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+# =============================================================================
+# REPLICA CONFIGURATION FOR TESTING
+# =============================================================================
+replicas: 1 # Single replica for testing
+
+# =============================================================================
+# RESOURCE LIMITS - SUITABLE FOR TESTING
+# =============================================================================
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# Controller resources
+controller:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+# =============================================================================
+# NETWORK POLICIES - SECURE BUT PERMISSIVE FOR TESTING
+# =============================================================================
+networkPolicy:
+  enabled: true
+  ingress:
+    - from: []
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8443
+
+# =============================================================================
+# AFFINITY - SPREAD ACROSS NODES FOR TESTING
+# =============================================================================
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - bunkerweb
+          topologyKey: kubernetes.io/hostname
+
+# =============================================================================
+# AUTOSCALING - DISABLED FOR PREDICTABLE TESTING
+# =============================================================================
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
