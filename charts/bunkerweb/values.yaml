@@ -336,7 +336,14 @@ scheduler:
       drop:
         - ALL
 
-  
+  # PRO Features configuration
+  # BunkerWeb PRO license key for advanced features
+  proLicenseKey: ""
+  # Enable Prometheus metrics exporter and creates a service for it
+  # Requires BunkerWeb PRO license
+  usePrometheusExporter: false
+  # ==================================================== #
+
   # BunkerWeb feature configuration
   # These settings control the behavior of BunkerWeb security features
   # These features will be applied by default on any new services, but could be overwritten on a per service basis
@@ -350,7 +357,7 @@ scheduler:
       # Default server protection
       disableDefaultServer: "no"
       disableDefaultServerStrictSni: "no"
-      
+
     # =============================================================================
     # MODSECURITY WAF
     # =============================================================================
@@ -367,7 +374,7 @@ scheduler:
       useModsecurityCrsPlugins: "yes"
       # List of CRS plugins to install (space-separated)
       modsecurityCrsPlugins: ""
-      
+
     # =============================================================================
     # ANTIBOT PROTECTION
     # =============================================================================
@@ -384,7 +391,7 @@ scheduler:
       antibotIgnoreIp: ""
       # URIs to bypass antibot challenges (regex patterns, space-separated)
       antibotIgnoreUri: ""
-      
+
     # =============================================================================
     # RATE LIMITING
     # =============================================================================
@@ -403,7 +410,7 @@ scheduler:
       limitConnMaxHttp2: "100"
       # Max HTTP/3 connections per IP
       limitConnMaxHttp3: "100"
-      
+
     # =============================================================================
     # BLACKLIST/WHITELIST
     # =============================================================================
@@ -416,7 +423,7 @@ scheduler:
       blacklistIp: ""
       # Blacklist URLs for automatic updates
       blacklistIpUrls: ""
-      
+
     whitelist:
       # Enable whitelist functionality
       useWhitelist: "no"
@@ -424,7 +431,7 @@ scheduler:
       whitelistIp: ""
       # Whitelist URLs for automatic updates
       whitelistIpUrls: ""
-      
+
     # =============================================================================
     # COUNTRY BLOCKING
     # =============================================================================
@@ -433,7 +440,7 @@ scheduler:
       whitelistCountry: ""
       # Blocked countries (ISO 3166-1 alpha-2 codes, space-separated)
       blacklistCountry: ""
-      
+
     # =============================================================================
     # BAD BEHAVIOR DETECTION
     # =============================================================================
@@ -448,7 +455,7 @@ scheduler:
       badBehaviorCountTime: "60"
       # Ban duration (seconds, 0 = permanent)
       badBehaviorBanTime: "86400"
-      
+
     # =============================================================================
     # SSL/TLS CONFIGURATION
     # =============================================================================
@@ -461,7 +468,7 @@ scheduler:
       sslCiphersLevel: "modern"
       # Auto-redirect HTTP to HTTPS
       autoRedirectHttpToHttps: "yes"
-      
+
     # Let's Encrypt configuration
     letsEncrypt:
       # Enable automatic Let's Encrypt certificates
@@ -474,7 +481,7 @@ scheduler:
       letsEncryptDnsProvider: ""
       # Enable wildcard certificates (DNS challenges only)
       useLetsEncryptWildcard: "no"
-      
+
     # Custom SSL certificate
     customSsl:
       # Use custom SSL certificates
@@ -485,7 +492,7 @@ scheduler:
       customSslCert: ""
       # Private key file path
       customSslKey: ""
-      
+
     # =============================================================================
     # COMPRESSION
     # =============================================================================
@@ -500,7 +507,7 @@ scheduler:
       useBrotli: "no"
       # Brotli compression level (0-11)
       brotliCompLevel: "6"
-      
+
     # =============================================================================
     # CLIENT CACHING
     # =============================================================================
@@ -513,7 +520,7 @@ scheduler:
       clientCacheControl: "public, max-age=86400"
       # Enable ETags
       clientCacheEtag: "yes"
-      
+
     # =============================================================================
     # REVERSE PROXY
     # =============================================================================
@@ -530,7 +537,7 @@ scheduler:
       reverseProxySendTimeout: "60s"
       # Read timeout
       reverseProxyReadTimeout: "60s"
-      
+
     # =============================================================================
     # REAL IP DETECTION
     # =============================================================================
@@ -545,7 +552,7 @@ scheduler:
       realIpRecursive: "yes"
       # Enable PROXY protocol support
       useProxyProtocol: "no"
-      
+
     # =============================================================================
     # SECURITY HEADERS
     # =============================================================================
@@ -566,7 +573,7 @@ scheduler:
       removeHeaders: "Server X-Powered-By"
       # Custom headers (multiple values supported with suffix _1, _2, etc.)
       customHeader: ""
-      
+
     # =============================================================================
     # CORS CONFIGURATION
     # =============================================================================
@@ -581,7 +588,7 @@ scheduler:
       corsAllowHeaders: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
       # Allow credentials
       corsAllowCredentials: "no"
-      
+
     # =============================================================================
     # DNSBL CHECKING
     # =============================================================================
@@ -590,7 +597,7 @@ scheduler:
       useDnsbl: "no"
       # DNSBL servers to query (space-separated)
       dnsblList: "bl.blocklist.de sbl.spamhaus.org xbl.spamhaus.org"
-      
+
     # =============================================================================
     # BUNKERNET THREAT INTELLIGENCE
     # =============================================================================
@@ -599,7 +606,7 @@ scheduler:
       useBunkernet: "yes"
       # BunkerNet API server
       bunkernetServer: "https://api.bunkerweb.io"
-      
+
     # =============================================================================
     # SESSION MANAGEMENT
     # =============================================================================
@@ -618,7 +625,7 @@ scheduler:
       sessionsCheckIp: "yes"
       # Check User-Agent consistency
       sessionsCheckUserAgent: "yes"
-      
+
     # =============================================================================
     # METRICS AND MONITORING
     # =============================================================================
@@ -631,7 +638,7 @@ scheduler:
       metricsMaxBlockedRequests: "1000"
       # Save metrics to Redis
       metricsSaveToRedis: "yes"
-      
+
     # =============================================================================
     # AUTH BASIC
     # =============================================================================
@@ -646,7 +653,7 @@ scheduler:
       authBasicPassword: ""
       # Authentication prompt text
       authBasicText: "Restricted area"
-      
+
     # =============================================================================
     # REDIRECTS
     # =============================================================================
@@ -659,7 +666,7 @@ scheduler:
       redirectToRequestUri: "yes"
       # HTTP status code for redirect
       redirectToStatusCode: "301"
-      
+
     # =============================================================================
     # ERROR PAGES
     # =============================================================================
@@ -668,7 +675,7 @@ scheduler:
       errors: ""
       # HTTP error codes to intercept
       interceptedErrorCodes: "400 401 403 404 405 413 429 500 501 502 503 504"
-      
+
     # =============================================================================
     # HTML INJECTION
     # =============================================================================
@@ -677,7 +684,7 @@ scheduler:
       injectHead: ""
       # HTML to inject before </body>
       injectBody: ""
-      
+
     # =============================================================================
     # ROBOTS.TXT
     # =============================================================================
@@ -692,7 +699,7 @@ scheduler:
       robotsTxtRule: ""
       # Sitemap URLs (multiple values supported)
       robotsTxtSitemap: ""
-      
+
     # =============================================================================
     # SECURITY.TXT
     # =============================================================================
@@ -705,7 +712,7 @@ scheduler:
       securityTxtExpires: ""
       # Security policy URL
       securityTxtPolicy: ""
-      
+
     # =============================================================================
     # CROWDSEC INTEGRATION
     # =============================================================================
@@ -720,7 +727,7 @@ scheduler:
       crowdSecMode: "live"
       # AppSec component URL (optional)
       crowdSecAppsecUrl: ""
-      
+
     # =============================================================================
     # PHP INTEGRATION
     # =============================================================================
@@ -735,7 +742,7 @@ scheduler:
       localPhp: ""
       # Local PHP-FPM path
       localPhpPath: ""
-      
+
     # =============================================================================
     # GREYLIST (CONDITIONAL ACCESS)
     # =============================================================================
@@ -746,7 +753,7 @@ scheduler:
       greylistIp: ""
       # Greylist URLs for automatic updates
       greylistIpUrls: ""
-      
+
     # =============================================================================
     # REVERSE SCAN
     # =============================================================================
@@ -757,7 +764,7 @@ scheduler:
       reverseScanPorts: "22 80 443 3128 8000 8080"
       # Scan timeout (milliseconds)
       reverseScanTimeout: "500"
-      
+
     # =============================================================================
     # BACKUP CONFIGURATION
     # =============================================================================
@@ -784,14 +791,6 @@ scheduler:
     periodSeconds: 5
     timeoutSeconds: 1
     failureThreshold: 3
-
-  # PRO Features configuration
-  # BunkerWeb PRO license key for advanced features
-  proLicenseKey: ""
-
-  # Enable Prometheus metrics exporter
-  # Requires BunkerWeb PRO license
-  usePrometheusExporter: false
 
 # =============================================================================
 # CONTROLLER COMPONENT
@@ -918,7 +917,7 @@ ui:
   # Log collection configuration
   logs:
     # Enable log collection sidecar
-    enabled: true
+    enabled: false
 
     # Syslog-ng container for log collection
     repository: balabit/syslog-ng

@@ -3,7 +3,7 @@
 # =============================================================================
 # This configuration deploys a complete BunkerWeb stack for testing purposes
 # Everything runs in the cluster with internal components
-# 
+#
 # Usage:
 #   helm install bunkerweb-test ./charts/bunkerweb -f examples/all-in-one-test.yaml
 #
@@ -18,7 +18,7 @@
 global:
   # Use a consistent release name
   nameOverride: "bunkerweb-aio"
-  
+
 # =============================================================================
 # BUNKERWEB MAIN SERVICE
 # =============================================================================
@@ -37,10 +37,10 @@ service:
 bunkerweb:
   # Deploy as Deployment for testing (easier to manage than DaemonSet)
   kind: Deployment
-  
+
   # Number of replicas for testing
   replicas: 1
-  
+
   # Enable BunkerWeb instance management
   enableInstance: true
 
@@ -49,7 +49,7 @@ bunkerweb:
     create: false
   # Don't use host ports in test environment
   hostPorts: false
-  
+
   # Resource configuration for testing environment
   resources:
     requests:
@@ -58,17 +58,17 @@ bunkerweb:
     limits:
       cpu: "500m"
       memory: "512Mi"
-  
+
   # Anti-affinity for better distribution
   podAntiAffinityPreset: "soft"
-  
+
   # Health check configuration
   livenessProbe:
     initialDelaySeconds: 30
     periodSeconds: 10
     timeoutSeconds: 5
     failureThreshold: 3
-    
+
   readinessProbe:
     initialDelaySeconds: 15
     periodSeconds: 5
@@ -87,7 +87,7 @@ mariadb:
     enabled: true
     size: 10Gi
 
-# Cache (Redis) - Internal for testing  
+# Cache (Redis) - Internal for testing
 redis:
   enabled: true
   persistence:
@@ -127,7 +127,7 @@ ui:
   # Test credentials - change in production!
   adminUsername: "admin"
   adminPassword: "bunkerweb123!"
-  
+
   # Enable ingress for UI access
   ingress:
     enabled: true
@@ -149,8 +149,8 @@ scheduler:
     # GLOBAL SETTINGS - STRICT SECURITY FOR TESTING
     # =============================================================================
     global:
-      securityMode: "detect"  # block / detect - Active protection or detection only mode
-      disableDefaultServer: "yes"  # Security hardening
+      securityMode: "detect" # block / detect - Active protection or detection only mode
+      disableDefaultServer: "yes" # Security hardening
       disableDefaultServerStrictSni: "no"
 
     # =============================================================================
@@ -179,7 +179,7 @@ scheduler:
     # =============================================================================
     rateLimit:
       useLimitReq: "yes"
-      limitReqRate: "20r/s"  # Allow more requests for testing
+      limitReqRate: "20r/s" # Allow more requests for testing
       limitReqUrl: "/"
       useLimitConn: "yes"
       limitConnMaxHttp1: "50"
@@ -211,7 +211,7 @@ scheduler:
       badBehaviorStatusCodes: "400 401 403 404 405 429 444"
       badBehaviorThreshold: "10"
       badBehaviorCountTime: "60"
-      badBehaviorBanTime: "3600"  # 1 hour ban for testing
+      badBehaviorBanTime: "3600" # 1 hour ban for testing
 
     # =============================================================================
     # SSL/TLS - SECURE CONFIGURATION
@@ -271,7 +271,7 @@ scheduler:
     # THREAT INTELLIGENCE - BUNKERNET ENABLED
     # =============================================================================
     dnsbl:
-      useDnsbl: "no"  # Disabled to avoid external dependencies in tests
+      useDnsbl: "no" # Disabled to avoid external dependencies in tests
 
     bunkernet:
       useBunkernet: "yes"
@@ -293,7 +293,7 @@ scheduler:
     # =============================================================================
     metrics:
       useMetrics: "yes"
-      metricsMemorySize: "32m"  # More memory for testing
+      metricsMemorySize: "32m" # More memory for testing
       metricsMaxBlockedRequests: "2000"
       metricsSaveToRedis: "yes"
 

@@ -53,8 +53,10 @@ spec:
               {{- if .Values.bunkerweb.hostPorts }}
               hostPort: 443
               {{- end }}
+            {{- if and .Values.bunkerweb.usePrometheusExporter }}
             - containerPort: 9113
               name: metrics
+            {{- end }}
           env:
             # Mandatory for k8s integration
             - name: KUBERNETES_MODE

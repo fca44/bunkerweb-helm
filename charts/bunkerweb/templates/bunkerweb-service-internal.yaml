@@ -11,7 +11,7 @@ spec:
     bunkerweb.io/component: "bunkerweb"
 
 ---
-
+{{- if .Values.scheduler.usePrometheusExporter -}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -29,3 +29,4 @@ spec:
       protocol: TCP
       port: 9113
       targetPort: 9113
+{{- end }}
