@@ -138,11 +138,15 @@ Generate BunkerWeb feature environment variables
 # =============================================================================
 # GLOBAL SETTINGS
 # =============================================================================
-{{- if .global }}
+{{- if and .global.securityMode (ne .global.securityMode "") }}
 - name: SECURITY_MODE
   value: {{ .global.securityMode | quote }}
+{{- end }}
+{{- if and .global.disableDefaultServer (ne .global.disableDefaultServer "") }}
 - name: DISABLE_DEFAULT_SERVER
   value: {{ .global.disableDefaultServer | quote }}
+{{- end }}
+{{- if and .global.disableDefaultServerStrictSni (ne .global.disableDefaultServerStrictSni "") }}
 - name: DISABLE_DEFAULT_SERVER_STRICT_SNI
   value: {{ .global.disableDefaultServerStrictSni | quote }}
 {{- end }}
