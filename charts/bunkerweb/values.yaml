@@ -691,7 +691,7 @@ scheduler:
     # =============================================================================
     robotsTxt:
       # Enable robots.txt generation
-      useRobotsTxt: "no"
+      useRobotsTxt: ""
       # DarkVisitors API token
       robotsTxtDarkvisitorsToken: ""
       # Community lists to include
