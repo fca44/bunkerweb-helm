@@ -347,31 +347,32 @@ scheduler:
   # BunkerWeb feature configuration
   # These settings control the behavior of BunkerWeb security features
   # These features will be applied by default on any new services, but could be overwritten on a per service basis
+  # For more details, visit: https://docs.bunkerweb.io/latest/features/
   features:
     # =============================================================================
     # GLOBAL SETTINGS
     # =============================================================================
     global:
       # Security mode: "detect" for monitoring only, "block" for active protection
-      securityMode: "block"
+      securityMode: ""
       # Default server protection
-      disableDefaultServer: "no"
-      disableDefaultServerStrictSni: "no"
+      disableDefaultServer: ""
+      disableDefaultServerStrictSni: ""
 
     # =============================================================================
     # MODSECURITY WAF
     # =============================================================================
     modsecurity:
       # Enable ModSecurity Web Application Firewall
-      useModsecurity: "yes"
+      useModsecurity: ""
       # Enable OWASP Core Rule Set
-      useModsecurityCrs: "yes"
+      useModsecurityCrs: ""
       # CRS version: "3", "4", or "nightly"
-      modsecurityCrsVersion: "4"
+      modsecurityCrsVersion: ""
       # Rule engine: "On", "DetectionOnly", or "Off"
-      modsecuritySecRuleEngine: "On"
+      modsecuritySecRuleEngine: ""
       # Enable CRS plugins for enhanced protection
-      useModsecurityCrsPlugins: "yes"
+      useModsecurityCrsPlugins: ""
       # List of CRS plugins to install (space-separated)
       modsecurityCrsPlugins: ""
 
@@ -380,13 +381,13 @@ scheduler:
     # =============================================================================
     antibot:
       # Antibot challenge type: "no", "cookie", "javascript", "captcha", "recaptcha", "hcaptcha", "turnstile", "mcaptcha"
-      useAntibot: "no"
+      useAntibot: ""
       # Challenge URI (must be unique and not used by your application)
-      antibotUri: "/challenge"
+      antibotUri: ""
       # Time limit to complete challenge (seconds)
-      antibotTimeResolve: "60"
+      antibotTimeResolve: ""
       # Challenge validity duration (seconds)
-      antibotTimeValid: "86400"
+      antibotTimeValid: ""
       # IPs to bypass antibot challenges (space-separated)
       antibotIgnoreIp: ""
       # URIs to bypass antibot challenges (regex patterns, space-separated)
@@ -397,28 +398,28 @@ scheduler:
     # =============================================================================
     rateLimit:
       # Enable request rate limiting
-      useLimitReq: "no"
+      useLimitReq: ""
       # Rate limit (e.g., "2r/s", "60r/m")
-      limitReqRate: "2r/s"
+      limitReqRate: ""
       # URL pattern to apply rate limiting
-      limitReqUrl: "/"
+      limitReqUrl: ""
       # Enable connection limiting
-      useLimitConn: "no"
+      useLimitConn: ""
       # Max HTTP/1.1 connections per IP
-      limitConnMaxHttp1: "10"
+      limitConnMaxHttp1: ""
       # Max HTTP/2 connections per IP
-      limitConnMaxHttp2: "100"
+      limitConnMaxHttp2: ""
       # Max HTTP/3 connections per IP
-      limitConnMaxHttp3: "100"
+      limitConnMaxHttp3: ""
 
     # =============================================================================
     # BLACKLIST/WHITELIST
     # =============================================================================
     blacklist:
       # Enable blacklist functionality
-      useBlacklist: "yes"
+      useBlacklist: ""
       # Community blacklists to use
-      blacklistCommunityLists: "ip:danmeuk-tor-exit ua:mitchellkrogza-bad-user-agents ip:laurent-minne-data-shield-aggressive"
+      blacklistCommunityLists: ""
       # Manual IP blacklist (space-separated)
       blacklistIp: ""
       # Blacklist URLs for automatic updates
@@ -426,7 +427,7 @@ scheduler:
 
     whitelist:
       # Enable whitelist functionality
-      useWhitelist: "no"
+      useWhitelist: ""
       # Manual IP whitelist (space-separated CIDR)
       whitelistIp: ""
       # Whitelist URLs for automatic updates
@@ -446,48 +447,48 @@ scheduler:
     # =============================================================================
     badBehavior:
       # Enable bad behavior detection
-      useBadBehavior: "yes"
+      useBadBehavior: ""
       # HTTP status codes considered "bad" (space-separated)
-      badBehaviorStatusCodes: "400 401 403 404 405 429 444"
+      badBehaviorStatusCodes: ""
       # Threshold before banning IP
-      badBehaviorThreshold: "10"
+      badBehaviorThreshold: ""
       # Time window for counting bad requests (seconds)
-      badBehaviorCountTime: "60"
+      badBehaviorCountTime: ""
       # Ban duration (seconds, 0 = permanent)
-      badBehaviorBanTime: "86400"
+      badBehaviorBanTime: ""
 
     # =============================================================================
     # SSL/TLS CONFIGURATION
     # =============================================================================
     ssl:
       # Enable HTTPS listening
-      listenHttps: "yes"
+      listenHttps: ""
       # SSL protocols to support
-      sslProtocols: "TLSv1.2 TLSv1.3"
+      sslProtocols: ""
       # Cipher security level: "old", "intermediate", "modern"
-      sslCiphersLevel: "modern"
+      sslCiphersLevel: ""
       # Auto-redirect HTTP to HTTPS
-      autoRedirectHttpToHttps: "yes"
+      autoRedirectHttpToHttps: ""
 
     # Let's Encrypt configuration
     letsEncrypt:
       # Enable automatic Let's Encrypt certificates
-      autoLetsEncrypt: "no"
+      autoLetsEncrypt: ""
       # Email for Let's Encrypt notifications
       emailLetsEncrypt: ""
       # Challenge type: "http" or "dns"
-      letsEncryptChallenge: "http"
+      letsEncryptChallenge: ""
       # DNS provider for DNS challenges
       letsEncryptDnsProvider: ""
       # Enable wildcard certificates (DNS challenges only)
-      useLetsEncryptWildcard: "no"
+      useLetsEncryptWildcard: ""
 
     # Custom SSL certificate
     customSsl:
       # Use custom SSL certificates
-      useCustomSsl: "no"
+      useCustomSsl: ""
       # Certificate priority: "file" or "data"
-      customSslCertPriority: "file"
+      customSslCertPriority: ""
       # Certificate file path
       customSslCert: ""
       # Private key file path
@@ -498,79 +499,79 @@ scheduler:
     # =============================================================================
     compression:
       # Enable GZIP compression
-      useGzip: "no"
+      useGzip: ""
       # GZIP compression level (1-9)
-      gzipCompLevel: "5"
+      gzipCompLevel: ""
       # Minimum response size for compression (bytes)
-      gzipMinLength: "1000"
+      gzipMinLength: ""
       # Enable Brotli compression
-      useBrotli: "no"
+      useBrotli: ""
       # Brotli compression level (0-11)
-      brotliCompLevel: "6"
+      brotliCompLevel: ""
 
     # =============================================================================
     # CLIENT CACHING
     # =============================================================================
     clientCache:
       # Enable client-side caching
-      useClientCache: "no"
+      useClientCache: ""
       # File extensions to cache (pipe-separated)
-      clientCacheExtensions: "jpg|jpeg|png|gif|css|js|svg|woff|woff2"
+      clientCacheExtensions: ""
       # Cache-Control header value
-      clientCacheControl: "public, max-age=86400"
+      clientCacheControl: ""
       # Enable ETags
-      clientCacheEtag: "yes"
+      clientCacheEtag: ""
 
     # =============================================================================
     # REVERSE PROXY
     # =============================================================================
     reverseProxy:
       # Enable reverse proxy functionality
-      useReverseProxy: "no"
+      useReverseProxy: ""
       # Backend server URLs (multiple values supported with suffix _1, _2, etc.)
       reverseProxyHost: ""
       # URL paths to proxy (multiple values supported with suffix _1, _2, etc.)
-      reverseProxyUrl: "/"
+      reverseProxyUrl: ""
       # Connection timeout
-      reverseProxyConnectTimeout: "10s"
+      reverseProxyConnectTimeout: ""
       # Send timeout
-      reverseProxySendTimeout: "60s"
+      reverseProxySendTimeout: ""
       # Read timeout
-      reverseProxyReadTimeout: "60s"
+      reverseProxyReadTimeout: ""
 
     # =============================================================================
     # REAL IP DETECTION
     # =============================================================================
     realIp:
       # Enable real IP detection (behind proxy/load balancer)
-      useRealIp: "no"
+      useRealIp: ""
       # Trusted proxy IPs (space-separated CIDR)
       realIpFrom: ""
       # Header containing real IP
-      realIpHeader: "X-Forwarded-For"
+      realIpHeader: ""
       # Enable recursive IP detection
-      realIpRecursive: "yes"
+      realIpRecursive: ""
       # Enable PROXY protocol support
-      useProxyProtocol: "no"
+      useProxyProtocol: ""
 
     # =============================================================================
     # SECURITY HEADERS
     # =============================================================================
     headers:
       # HSTS header
-      strictTransportSecurity: "max-age=63072000; includeSubDomains; preload"
+      strictTransportSecurity: ""
       # Content Security Policy
-      contentSecurityPolicy: "object-src 'none'; form-action 'self'; frame-ancestors 'self';"
+      contentSecurityPolicy: ""
       # CSP report-only mode
-      contentSecurityPolicyReportOnly: "no"
+      contentSecurityPolicyReportOnly: ""
       # X-Frame-Options header
-      xFrameOptions: "SAMEORIGIN"
+      xFrameOptions: ""
       # X-Content-Type-Options header
-      xContentTypeOptions: "nosniff"
+      xContentTypeOptions: ""
       # Referrer Policy
-      referrerPolicy: "strict-origin-when-cross-origin"
+      referrerPolicy: ""
       # Headers to remove (space-separated)
-      removeHeaders: "Server X-Powered-By"
+      removeHeaders: ""
       # Custom headers (multiple values supported with suffix _1, _2, etc.)
       customHeader: ""
 
@@ -579,33 +580,33 @@ scheduler:
     # =============================================================================
     cors:
       # Enable CORS
-      useCors: "no"
+      useCors: ""
       # Allowed origins (regex pattern or "self" or "*")
-      corsAllowOrigin: "self"
+      corsAllowOrigin: ""
       # Allowed HTTP methods
-      corsAllowMethods: "GET, POST, OPTIONS"
+      corsAllowMethods: ""
       # Allowed headers
-      corsAllowHeaders: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+      corsAllowHeaders: ""
       # Allow credentials
-      corsAllowCredentials: "no"
+      corsAllowCredentials: ""
 
     # =============================================================================
     # DNSBL CHECKING
     # =============================================================================
     dnsbl:
       # Enable DNSBL checking
-      useDnsbl: "no"
+      useDnsbl: ""
       # DNSBL servers to query (space-separated)
-      dnsblList: "bl.blocklist.de sbl.spamhaus.org xbl.spamhaus.org"
+      dnsblList: ""
 
     # =============================================================================
     # BUNKERNET THREAT INTELLIGENCE
     # =============================================================================
     bunkerNet:
       # Enable BunkerNet threat intelligence
-      useBunkernet: "yes"
+      useBunkernet: ""
       # BunkerNet API server
-      bunkernetServer: "https://api.bunkerweb.io"
+      bunkernetServer: ""
 
     # =============================================================================
     # SESSION MANAGEMENT
@@ -614,45 +615,45 @@ scheduler:
       # Session secret key (leave empty to auto-generate)
       sessionsSecret: ""
       # Session cookie name
-      sessionsName: "bwcookie"
+      sessionsName: ""
       # Idle timeout (seconds)
-      sessionsIdlingTimeout: "1800"
+      sessionsIdlingTimeout: ""
       # Rolling timeout (seconds)
-      sessionsRollingTimeout: "3600"
+      sessionsRollingTimeout: ""
       # Absolute timeout (seconds)
-      sessionsAbsoluteTimeout: "86400"
+      sessionsAbsoluteTimeout: ""
       # Check IP address consistency
-      sessionsCheckIp: "yes"
+      sessionsCheckIp: ""
       # Check User-Agent consistency
-      sessionsCheckUserAgent: "yes"
+      sessionsCheckUserAgent: ""
 
     # =============================================================================
     # METRICS AND MONITORING
     # =============================================================================
     metrics:
       # Enable metrics collection
-      useMetrics: "yes"
+      useMetrics: ""
       # Memory size for metrics storage
-      metricsMemorySize: "16m"
+      metricsMemorySize: ""
       # Max blocked requests per worker
-      metricsMaxBlockedRequests: "1000"
+      metricsMaxBlockedRequests: ""
       # Save metrics to Redis
-      metricsSaveToRedis: "yes"
+      metricsSaveToRedis: ""
 
     # =============================================================================
     # AUTH BASIC
     # =============================================================================
     authBasic:
       # Enable HTTP Basic Authentication
-      useAuthBasic: "no"
+      useAuthBasic: ""
       # Protection scope: "sitewide" or specific path
-      authBasicLocation: "sitewide"
+      authBasicLocation: ""
       # Username (multiple values supported with suffix _1, _2, etc.)
       authBasicUser: ""
       # Password (multiple values supported with suffix _1, _2, etc.)
       authBasicPassword: ""
       # Authentication prompt text
-      authBasicText: "Restricted area"
+      authBasicText: ""
 
     # =============================================================================
     # REDIRECTS
@@ -663,9 +664,9 @@ scheduler:
       # Destination URL
       redirectTo: ""
       # Preserve request URI
-      redirectToRequestUri: "yes"
+      redirectToRequestUri: ""
       # HTTP status code for redirect
-      redirectToStatusCode: "301"
+      redirectToStatusCode: ""
 
     # =============================================================================
     # ERROR PAGES
@@ -674,7 +675,7 @@ scheduler:
       # Custom error page mappings (ERROR_CODE=/path/to/file.html)
       errors: ""
       # HTTP error codes to intercept
-      interceptedErrorCodes: "400 401 403 404 405 413 429 500 501 502 503 504"
+      interceptedErrorCodes: ""
 
     # =============================================================================
     # HTML INJECTION
@@ -705,7 +706,7 @@ scheduler:
     # =============================================================================
     securityTxt:
       # Enable security.txt file
-      useSecurityTxt: "no"
+      useSecurityTxt: ""
       # Contact information (multiple values supported)
       securityTxtContact: ""
       # Expiration date (ISO 8601 format)
@@ -718,13 +719,13 @@ scheduler:
     # =============================================================================
     crowdSec:
       # Enable CrowdSec integration
-      useCrowdSec: "no"
+      useCrowdSec: ""
       # CrowdSec Local API URL
-      crowdSecApi: "http://crowdsec:8080"
+      crowdSecApi: ""
       # CrowdSec API key
       crowdSecApiKey: ""
       # Operation mode: "live" or "stream"
-      crowdSecMode: "live"
+      crowdSecMode: ""
       # AppSec component URL (optional)
       crowdSecAppsecUrl: ""
 
@@ -735,7 +736,7 @@ scheduler:
       # Remote PHP-FPM host
       remotePhp: ""
       # Remote PHP-FPM port
-      remotePhpPort: "9000"
+      remotePhpPort: ""
       # Remote PHP-FPM path
       remotephpPath: ""
       # Local PHP-FPM socket
@@ -748,7 +749,7 @@ scheduler:
     # =============================================================================
     greylist:
       # Enable greylist functionality
-      useGreylist: "no"
+      useGreylist: ""
       # IP addresses to greylist (space-separated CIDR)
       greylistIp: ""
       # Greylist URLs for automatic updates
@@ -759,24 +760,24 @@ scheduler:
     # =============================================================================
     reverseScan:
       # Enable client port scanning
-      useReverseScan: "no"
+      useReverseScan: ""
       # Ports to scan on client (space-separated)
-      reverseScanPorts: "22 80 443 3128 8000 8080"
+      reverseScanPorts: ""
       # Scan timeout (milliseconds)
-      reverseScanTimeout: "500"
+      reverseScanTimeout: ""
 
     # =============================================================================
     # BACKUP CONFIGURATION
     # =============================================================================
     backup:
       # Enable backup functionality
-      useBackup: "yes"
+      useBackup: ""
       # Backup frequency: "daily", "weekly", "monthly"
-      backupSchedule: "daily"
+      backupSchedule: ""
       # Number of backups to retain
-      backupRotation: "7"
+      backupRotation: ""
       # Backup directory
-      backupDirectory: "/var/lib/bunkerweb/backups"
+      backupDirectory: ""
 
   # Additional environment variables for advanced configuration
   # These will be merged with the feature configuration above
