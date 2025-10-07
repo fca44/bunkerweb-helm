@@ -188,7 +188,7 @@ bunkerweb:
 
   # Container image configuration
   repository: bunkerity/bunkerweb
-  tag: 1.6.4
+  tag: 1.6.5
   pullPolicy: Always
 
   # Image pull secrets (overrides global setting)
@@ -252,6 +252,7 @@ bunkerweb:
     exec:
       command:
         - /usr/share/bunkerweb/helpers/healthcheck.sh
+        - ok
     initialDelaySeconds: 30
     periodSeconds: 1
     timeoutSeconds: 1
@@ -299,7 +300,7 @@ bunkerweb:
 scheduler:
   # Container image configuration
   repository: bunkerity/bunkerweb-scheduler
-  tag: 1.6.4
+  tag: 1.6.5
   pullPolicy: Always
 
   # Image pull secrets (overrides global setting)
@@ -804,7 +805,7 @@ controller:
 
   # Container image configuration
   repository: bunkerity/bunkerweb-autoconf
-  tag: 1.6.4
+  tag: 1.6.5
   pullPolicy: Always
 
   # Image pull secrets (overrides global setting)
@@ -875,7 +876,7 @@ ui:
 
   # Container image configuration
   repository: bunkerity/bunkerweb-ui
-  tag: 1.6.4
+  tag: 1.6.5
   pullPolicy: Always
 
   # Image pull secrets (overrides global setting)
