@@ -1004,7 +1004,8 @@ mariadb:
 
   # Additional arguments for MariaDB
   # Example: args: ["--character-set-server=utf8mb4"]
-  args: []
+  args:
+    - "--max-allowed-packet=67108864"
 
   # Resource requests and limits
   # RECOMMENDED: Uncomment and adjust for production
