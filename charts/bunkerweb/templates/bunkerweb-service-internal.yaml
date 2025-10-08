@@ -6,10 +6,14 @@ metadata:
   labels:
     {{- include "bunkerweb.labels" . | nindent 4 }}
 spec:
-  clusterIP: None
+  type: ClusterIP
   selector:
     bunkerweb.io/component: "bunkerweb"
-
+  ports:
+    - name: bwapi
+      protocol: TCP
+      port: 5000
+      targetPort: 5000
 ---
 {{- if .Values.scheduler.usePrometheusExporter -}}
 apiVersion: v1
