@@ -50,6 +50,7 @@ Main reverse proxy and WAF component
 | `bunkerweb.enableInstance` | Pod annotations for Kubernetes integration (required) This enables BunkerWeb to be managed by the co... | `bool` | `true` |
 | `bunkerweb.extraEnvs` | Additional environment variables | `list` | `[]` |
 | `bunkerweb.hostPorts` | Use host ports for direct traffic (only for DaemonSet) Allows binding to ports 80/443 on each node | `bool` | `true` |
+| `bunkerweb.hpa` | Horizontal Pod Autoscaler configuration Automatically scales the number of pods based on CPU/memory ... | `object` | See nested values |
 | `bunkerweb.imagePullSecrets` | Image pull secrets (overrides global setting) | `list` | `[]` |
 | `bunkerweb.kind` | Deployment type: "DaemonSet" or "Deployment" or "StatefulSet" DaemonSet: Runs one pod per node (reco... | `string` | `"Deployment"` |
 | `bunkerweb.livenessProbe` | Liveness probe configuration | `object` | See nested values |
@@ -63,10 +64,17 @@ Main reverse proxy and WAF component
 | `bunkerweb.replicas` | Number of replicas (for Deployment & StatefulSet kind) Minimum 2 for high availability and PodDisrup... | `int` | `1` |
 | `bunkerweb.repository` | Container image configuration | `string` | `"bunkerity/bunkerweb"` |
 | `bunkerweb.securityContext` | Security context for BunkerWeb container | `object` | See nested values |
-| `bunkerweb.tag` | Configuration for tag | `string` | `"1.6.4"` |
+| `bunkerweb.service` | Internal service for communication between components (scheduler, controller) | `object` | See nested values |
+| `bunkerweb.tag` | Configuration for tag | `string` | `"1.6.5"` |
 | `bunkerweb.tolerations` | Tolerations (overrides global setting) | `list` | `[]` |
 | `bunkerweb.volumeMounts` | volumes: - name: shared-data persistentVolumeClaim: claimName: shared-pvc Custom volume mounts confi... | `list` | `[]` |
 | `bunkerweb.volumes` | Custom volumes configuration Allows mounting additional volumes to the BunkerWeb container | `list` | `[]` |
+| `bunkerweb.hpa.cpu` | Configuration for cpu | `object` | See nested values |
+| `bunkerweb.hpa.enabled` | Configuration for enabled | `bool` | `false` |
+| `bunkerweb.hpa.maxReplicas` | Configuration for maxReplicas | `int` | `10` |
+| `bunkerweb.hpa.memory` | Configuration for memory | `object` | See nested values |
+| `bunkerweb.hpa.minReplicas` | Configuration for minReplicas | `int` | `2` |
+| `bunkerweb.hpa.targetKind` | Configuration for targetKind | `string` | `"Deployment"` |
 | `bunkerweb.livenessProbe.exec` | Configuration for exec | `object` | See nested values |
 | `bunkerweb.livenessProbe.failureThreshold` | Configuration for failureThreshold | `int` | `3` |
 | `bunkerweb.livenessProbe.initialDelaySeconds` | Configuration for initialDelaySeconds | `int` | `30` |
@@ -84,8 +92,13 @@ Main reverse proxy and WAF component
 | `bunkerweb.securityContext.capabilities` | Configuration for capabilities | `object` | See nested values |
 | `bunkerweb.securityContext.runAsGroup` | Configuration for runAsGroup | `int` | `101` |
 | `bunkerweb.securityContext.runAsUser` | Configuration for runAsUser | `int` | `101` |
+| `bunkerweb.service.headless` | Use headless service (only for StatefulSet kind), don't forget to edit scheduler extraEnvs BUNKERWEB... | `bool` | `false` |
+| `bunkerweb.hpa.cpu.enabled` | Set to true to create an Ingress resource for the UI | `bool` | `true` |
+| `bunkerweb.hpa.cpu.targetAverageUtilization` | Configuration for targetAverageUtilization | `int` | `60` |
+| `bunkerweb.hpa.memory.enabled` | Set to true to create an Ingress resource for the UI | `bool` | `true` |
+| `bunkerweb.hpa.memory.targetAverageUtilization` | Configuration for targetAverageUtilization | `int` | `70` |
 | `bunkerweb.livenessProbe.exec.command` | Configuration for command | `list` | `['/usr/share/bunkerweb/helpers/healthcheck.sh']` |
-| `bunkerweb.readinessProbe.exec.command` | Configuration for command | `list` | `['/usr/share/bunkerweb/helpers/healthcheck.sh']` |
+| `bunkerweb.readinessProbe.exec.command` | Configuration for command | `list` | `['/usr/share/bunkerweb/helpers/healthcheck.sh', 'ok']` |
 | `bunkerweb.securityContext.capabilities.drop` | Configuration for drop | `list` | `['ALL']` |
 
 ---
@@ -109,14 +122,14 @@ Web interface for BunkerWeb management and monitoring
 | `ui.readinessProbe` | Readiness probe configuration | `object` | See nested values |
 | `ui.repository` | Container image configuration | `string` | `"bunkerity/bunkerweb-ui"` |
 | `ui.securityContext` | Security context for BunkerWeb container | `object` | See nested values |
-| `ui.tag` | Configuration for tag | `string` | `"1.6.4"` |
+| `ui.tag` | Configuration for tag | `string` | `"1.6.5"` |
 | `ui.tolerations` | Tolerations (overrides global setting) | `list` | `[]` |
 | `ui.livenessProbe.exec` | Configuration for exec | `object` | See nested values |
 | `ui.livenessProbe.failureThreshold` | Configuration for failureThreshold | `int` | `3` |
 | `ui.livenessProbe.initialDelaySeconds` | Configuration for initialDelaySeconds | `int` | `30` |
 | `ui.livenessProbe.periodSeconds` | Configuration for periodSeconds | `int` | `5` |
 | `ui.livenessProbe.timeoutSeconds` | Configuration for timeoutSeconds | `int` | `1` |
-| `ui.logs.enabled` | Enable log collection sidecar | `bool` | `true` |
+| `ui.logs.enabled` | Configuration for enabled | `bool` | `false` |
 | `ui.logs.persistence` | Persistent storage for logs | `object` | See nested values |
 | `ui.logs.pullPolicy` | Configuration for pullPolicy | `string` | `"Always"` |
 | `ui.logs.repository` | Syslog-ng container for log collection | `string` | `"balabit/syslog-ng"` |
@@ -156,9 +169,9 @@ Manages BunkerWeb configuration and coordination
 | `scheduler.pullPolicy` | Configuration for pullPolicy | `string` | `"Always"` |
 | `scheduler.repository` | Container image configuration | `string` | `"bunkerity/bunkerweb-scheduler"` |
 | `scheduler.securityContext` | Security context for BunkerWeb container | `object` | See nested values |
-| `scheduler.tag` | Configuration for tag | `string` | `"1.6.4"` |
+| `scheduler.tag` | Configuration for tag | `string` | `"1.6.5"` |
 | `scheduler.tolerations` | Tolerations (overrides global setting) | `list` | `[]` |
-| `scheduler.usePrometheusExporter` | Enable Prometheus metrics exporter Requires BunkerWeb PRO license | `bool` | `false` |
+| `scheduler.usePrometheusExporter` | Enable Prometheus metrics exporter and creates a service for it Requires BunkerWeb PRO license | `bool` | `false` |
 | `scheduler.features.antibot` | Configuration for antibot | `object` | See nested values |
 | `scheduler.features.authBasic` | Configuration for authBasic | `object` | See nested values |
 | `scheduler.features.backup` | Configuration for backup | `object` | See nested values |
@@ -193,8 +206,8 @@ Manages BunkerWeb configuration and coordination
 | `scheduler.features.whitelist` | Configuration for whitelist | `object` | See nested values |
 | `scheduler.livenessProbe.exec` | Configuration for exec | `object` | See nested values |
 | `scheduler.livenessProbe.failureThreshold` | Configuration for failureThreshold | `int` | `3` |
-| `scheduler.livenessProbe.initialDelaySeconds` | Configuration for initialDelaySeconds | `int` | `30` |
-| `scheduler.livenessProbe.periodSeconds` | Configuration for periodSeconds | `int` | `5` |
+| `scheduler.livenessProbe.initialDelaySeconds` | Configuration for initialDelaySeconds | `int` | `90` |
+| `scheduler.livenessProbe.periodSeconds` | Configuration for periodSeconds | `int` | `10` |
 | `scheduler.livenessProbe.timeoutSeconds` | Configuration for timeoutSeconds | `int` | `1` |
 | `scheduler.securityContext.allowPrivilegeEscalation` | Configuration for allowPrivilegeEscalation | `bool` | `false` |
 | `scheduler.securityContext.capabilities` | Configuration for capabilities | `object` | See nested values |
@@ -202,141 +215,141 @@ Manages BunkerWeb configuration and coordination
 | `scheduler.securityContext.runAsUser` | Configuration for runAsUser | `int` | `101` |
 | `scheduler.features.antibot.antibotIgnoreIp` | IPs to bypass antibot challenges (space-separated) | `string` | `""` |
 | `scheduler.features.antibot.antibotIgnoreUri` | URIs to bypass antibot challenges (regex patterns, space-separated) | `string` | `""` |
-| `scheduler.features.antibot.antibotTimeResolve` | Time limit to complete challenge (seconds) | `string` | `"60"` |
-| `scheduler.features.antibot.antibotTimeValid` | Challenge validity duration (seconds) | `string` | `"86400"` |
-| `scheduler.features.antibot.antibotUri` | Challenge URI (must be unique and not used by your application) | `string` | `"/challenge"` |
-| `scheduler.features.antibot.useAntibot` | Antibot challenge type: "no", "cookie", "javascript", "captcha", "recaptcha", "hcaptcha", "turnstile... | `string` | `"no"` |
-| `scheduler.features.authBasic.authBasicLocation` | Protection scope: "sitewide" or specific path | `string` | `"sitewide"` |
+| `scheduler.features.antibot.antibotTimeResolve` | Time limit to complete challenge (seconds) | `string` | `""` |
+| `scheduler.features.antibot.antibotTimeValid` | Challenge validity duration (seconds) | `string` | `""` |
+| `scheduler.features.antibot.antibotUri` | Challenge URI (must be unique and not used by your application) | `string` | `""` |
+| `scheduler.features.antibot.useAntibot` | Antibot challenge type: "no", "cookie", "javascript", "captcha", "recaptcha", "hcaptcha", "turnstile... | `string` | `""` |
+| `scheduler.features.authBasic.authBasicLocation` | Protection scope: "sitewide" or specific path | `string` | `""` |
 | `scheduler.features.authBasic.authBasicPassword` | Password (multiple values supported with suffix _1, _2, etc.) | `string` | `""` |
-| `scheduler.features.authBasic.authBasicText` | Authentication prompt text | `string` | `"Restricted area"` |
+| `scheduler.features.authBasic.authBasicText` | Authentication prompt text | `string` | `""` |
 | `scheduler.features.authBasic.authBasicUser` | Username (multiple values supported with suffix _1, _2, etc.) | `string` | `""` |
-| `scheduler.features.authBasic.useAuthBasic` | Enable HTTP Basic Authentication | `string` | `"no"` |
-| `scheduler.features.backup.backupDirectory` | Backup directory | `string` | `"/var/lib/bunkerweb/backups"` |
-| `scheduler.features.backup.backupRotation` | Number of backups to retain | `string` | `"7"` |
-| `scheduler.features.backup.backupSchedule` | Backup frequency: "daily", "weekly", "monthly" | `string` | `"daily"` |
-| `scheduler.features.backup.useBackup` | Enable backup functionality | `string` | `"yes"` |
-| `scheduler.features.badBehavior.badBehaviorBanTime` | Ban duration (seconds, 0 = permanent) | `string` | `"86400"` |
-| `scheduler.features.badBehavior.badBehaviorCountTime` | Time window for counting bad requests (seconds) | `string` | `"60"` |
-| `scheduler.features.badBehavior.badBehaviorStatusCodes` | HTTP status codes considered "bad" (space-separated) | `string` | `"400 401 403 404 405 429 444"` |
-| `scheduler.features.badBehavior.badBehaviorThreshold` | Threshold before banning IP | `string` | `"10"` |
-| `scheduler.features.badBehavior.useBadBehavior` | Enable bad behavior detection | `string` | `"yes"` |
-| `scheduler.features.blacklist.blacklistCommunityLists` | Community blacklists to use | `string` | `"ip:danmeuk-tor-exit ua:mitchellkrogza-bad-user-agents ip:laurent-minne-data-shield-aggressive"` |
+| `scheduler.features.authBasic.useAuthBasic` | Enable HTTP Basic Authentication | `string` | `""` |
+| `scheduler.features.backup.backupDirectory` | Backup directory | `string` | `""` |
+| `scheduler.features.backup.backupRotation` | Number of backups to retain | `string` | `""` |
+| `scheduler.features.backup.backupSchedule` | Backup frequency: "daily", "weekly", "monthly" | `string` | `""` |
+| `scheduler.features.backup.useBackup` | Enable backup functionality | `string` | `""` |
+| `scheduler.features.badBehavior.badBehaviorBanTime` | Ban duration (seconds, 0 = permanent) | `string` | `""` |
+| `scheduler.features.badBehavior.badBehaviorCountTime` | Time window for counting bad requests (seconds) | `string` | `""` |
+| `scheduler.features.badBehavior.badBehaviorStatusCodes` | HTTP status codes considered "bad" (space-separated) | `string` | `""` |
+| `scheduler.features.badBehavior.badBehaviorThreshold` | Threshold before banning IP | `string` | `""` |
+| `scheduler.features.badBehavior.useBadBehavior` | Enable bad behavior detection | `string` | `""` |
+| `scheduler.features.blacklist.blacklistCommunityLists` | Community blacklists to use | `string` | `""` |
 | `scheduler.features.blacklist.blacklistIp` | Manual IP blacklist (space-separated) | `string` | `""` |
 | `scheduler.features.blacklist.blacklistIpUrls` | Blacklist URLs for automatic updates | `string` | `""` |
-| `scheduler.features.blacklist.useBlacklist` | Enable blacklist functionality | `string` | `"yes"` |
-| `scheduler.features.bunkerNet.bunkernetServer` | BunkerNet API server | `string` | `"https://api.bunkerweb.io"` |
-| `scheduler.features.bunkerNet.useBunkernet` | Enable BunkerNet threat intelligence | `string` | `"yes"` |
-| `scheduler.features.clientCache.clientCacheControl` | Cache-Control header value | `string` | `"public, max-age=86400"` |
-| `scheduler.features.clientCache.clientCacheEtag` | Enable ETags | `string` | `"yes"` |
-| `scheduler.features.clientCache.clientCacheExtensions` | File extensions to cache (pipe-separated) | `string` | `"jpg|jpeg|png|gif|css|js|svg|woff|woff2"` |
-| `scheduler.features.clientCache.useClientCache` | Enable client-side caching | `string` | `"no"` |
-| `scheduler.features.compression.brotliCompLevel` | Brotli compression level (0-11) | `string` | `"6"` |
-| `scheduler.features.compression.gzipCompLevel` | GZIP compression level (1-9) | `string` | `"5"` |
-| `scheduler.features.compression.gzipMinLength` | Minimum response size for compression (bytes) | `string` | `"1000"` |
-| `scheduler.features.compression.useBrotli` | Enable Brotli compression | `string` | `"no"` |
-| `scheduler.features.compression.useGzip` | Enable GZIP compression | `string` | `"no"` |
-| `scheduler.features.cors.corsAllowCredentials` | Allow credentials | `string` | `"no"` |
-| `scheduler.features.cors.corsAllowHeaders` | Allowed headers | `string` | `"DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"` |
-| `scheduler.features.cors.corsAllowMethods` | Allowed HTTP methods | `string` | `"GET, POST, OPTIONS"` |
-| `scheduler.features.cors.corsAllowOrigin` | Allowed origins (regex pattern or "self" or "*") | `string` | `"self"` |
-| `scheduler.features.cors.useCors` | Enable CORS | `string` | `"no"` |
-| `scheduler.features.crowdSec.crowdSecApi` | CrowdSec Local API URL | `string` | `"http://crowdsec:8080"` |
+| `scheduler.features.blacklist.useBlacklist` | Enable blacklist functionality | `string` | `""` |
+| `scheduler.features.bunkerNet.bunkernetServer` | BunkerNet API server | `string` | `""` |
+| `scheduler.features.bunkerNet.useBunkernet` | Enable BunkerNet threat intelligence | `string` | `""` |
+| `scheduler.features.clientCache.clientCacheControl` | Cache-Control header value | `string` | `""` |
+| `scheduler.features.clientCache.clientCacheEtag` | Enable ETags | `string` | `""` |
+| `scheduler.features.clientCache.clientCacheExtensions` | File extensions to cache (pipe-separated) | `string` | `""` |
+| `scheduler.features.clientCache.useClientCache` | Enable client-side caching | `string` | `""` |
+| `scheduler.features.compression.brotliCompLevel` | Brotli compression level (0-11) | `string` | `""` |
+| `scheduler.features.compression.gzipCompLevel` | GZIP compression level (1-9) | `string` | `""` |
+| `scheduler.features.compression.gzipMinLength` | Minimum response size for compression (bytes) | `string` | `""` |
+| `scheduler.features.compression.useBrotli` | Enable Brotli compression | `string` | `""` |
+| `scheduler.features.compression.useGzip` | Enable GZIP compression | `string` | `""` |
+| `scheduler.features.cors.corsAllowCredentials` | Allow credentials | `string` | `""` |
+| `scheduler.features.cors.corsAllowHeaders` | Allowed headers | `string` | `""` |
+| `scheduler.features.cors.corsAllowMethods` | Allowed HTTP methods | `string` | `""` |
+| `scheduler.features.cors.corsAllowOrigin` | Allowed origins (regex pattern or "self" or "*") | `string` | `""` |
+| `scheduler.features.cors.useCors` | Enable CORS | `string` | `""` |
+| `scheduler.features.crowdSec.crowdSecApi` | CrowdSec Local API URL | `string` | `""` |
 | `scheduler.features.crowdSec.crowdSecApiKey` | CrowdSec API key | `string` | `""` |
 | `scheduler.features.crowdSec.crowdSecAppsecUrl` | AppSec component URL (optional) | `string` | `""` |
-| `scheduler.features.crowdSec.crowdSecMode` | Operation mode: "live" or "stream" | `string` | `"live"` |
-| `scheduler.features.crowdSec.useCrowdSec` | Enable CrowdSec integration | `string` | `"no"` |
+| `scheduler.features.crowdSec.crowdSecMode` | Operation mode: "live" or "stream" | `string` | `""` |
+| `scheduler.features.crowdSec.useCrowdSec` | Enable CrowdSec integration | `string` | `""` |
 | `scheduler.features.customSsl.customSslCert` | Certificate file path | `string` | `""` |
-| `scheduler.features.customSsl.customSslCertPriority` | Certificate priority: "file" or "data" | `string` | `"file"` |
+| `scheduler.features.customSsl.customSslCertPriority` | Certificate priority: "file" or "data" | `string` | `""` |
 | `scheduler.features.customSsl.customSslKey` | Private key file path | `string` | `""` |
-| `scheduler.features.customSsl.useCustomSsl` | Use custom SSL certificates | `string` | `"no"` |
-| `scheduler.features.dnsbl.dnsblList` | DNSBL servers to query (space-separated) | `string` | `"bl.blocklist.de sbl.spamhaus.org xbl.spamhaus.org"` |
-| `scheduler.features.dnsbl.useDnsbl` | Enable DNSBL checking | `string` | `"no"` |
+| `scheduler.features.customSsl.useCustomSsl` | Use custom SSL certificates | `string` | `""` |
+| `scheduler.features.dnsbl.dnsblList` | DNSBL servers to query (space-separated) | `string` | `""` |
+| `scheduler.features.dnsbl.useDnsbl` | Enable DNSBL checking | `string` | `""` |
 | `scheduler.features.errors.errors` | Custom error page mappings (ERROR_CODE=/path/to/file.html) | `string` | `""` |
-| `scheduler.features.errors.interceptedErrorCodes` | HTTP error codes to intercept | `string` | `"400 401 403 404 405 413 429 500 501 502 503 504"` |
+| `scheduler.features.errors.interceptedErrorCodes` | HTTP error codes to intercept | `string` | `""` |
 | `scheduler.features.geoBlocking.blacklistCountry` | Blocked countries (ISO 3166-1 alpha-2 codes, space-separated) | `string` | `""` |
 | `scheduler.features.geoBlocking.whitelistCountry` | Allowed countries (ISO 3166-1 alpha-2 codes, space-separated) | `string` | `""` |
-| `scheduler.features.global.disableDefaultServer` | Default server protection | `string` | `"no"` |
-| `scheduler.features.global.disableDefaultServerStrictSni` | Configuration for disableDefaultServerStrictSni | `string` | `"no"` |
-| `scheduler.features.global.securityMode` | Security mode: "detect" for monitoring only, "block" for active protection | `string` | `"block"` |
+| `scheduler.features.global.disableDefaultServer` | Default server protection | `string` | `""` |
+| `scheduler.features.global.disableDefaultServerStrictSni` | Configuration for disableDefaultServerStrictSni | `string` | `""` |
+| `scheduler.features.global.securityMode` | Security mode: "detect" for monitoring only, "block" for active protection | `string` | `""` |
 | `scheduler.features.greylist.greylistIp` | IP addresses to greylist (space-separated CIDR) | `string` | `""` |
 | `scheduler.features.greylist.greylistIpUrls` | Greylist URLs for automatic updates | `string` | `""` |
-| `scheduler.features.greylist.useGreylist` | Enable greylist functionality | `string` | `"no"` |
-| `scheduler.features.headers.contentSecurityPolicy` | Content Security Policy | `string` | `"object-src 'none'; form-action 'self'; frame-ancestors 'self';"` |
-| `scheduler.features.headers.contentSecurityPolicyReportOnly` | CSP report-only mode | `string` | `"no"` |
+| `scheduler.features.greylist.useGreylist` | Enable greylist functionality | `string` | `""` |
+| `scheduler.features.headers.contentSecurityPolicy` | Content Security Policy | `string` | `""` |
+| `scheduler.features.headers.contentSecurityPolicyReportOnly` | CSP report-only mode | `string` | `""` |
 | `scheduler.features.headers.customHeader` | Custom headers (multiple values supported with suffix _1, _2, etc.) | `string` | `""` |
-| `scheduler.features.headers.referrerPolicy` | Referrer Policy | `string` | `"strict-origin-when-cross-origin"` |
-| `scheduler.features.headers.removeHeaders` | Headers to remove (space-separated) | `string` | `"Server X-Powered-By"` |
-| `scheduler.features.headers.strictTransportSecurity` | HSTS header | `string` | `"max-age=63072000; includeSubDomains; preload"` |
-| `scheduler.features.headers.xContentTypeOptions` | X-Content-Type-Options header | `string` | `"nosniff"` |
-| `scheduler.features.headers.xFrameOptions` | X-Frame-Options header | `string` | `"SAMEORIGIN"` |
+| `scheduler.features.headers.referrerPolicy` | Referrer Policy | `string` | `""` |
+| `scheduler.features.headers.removeHeaders` | Headers to remove (space-separated) | `string` | `""` |
+| `scheduler.features.headers.strictTransportSecurity` | HSTS header | `string` | `""` |
+| `scheduler.features.headers.xContentTypeOptions` | X-Content-Type-Options header | `string` | `""` |
+| `scheduler.features.headers.xFrameOptions` | X-Frame-Options header | `string` | `""` |
 | `scheduler.features.htmlInjection.injectBody` | HTML to inject before </body> | `string` | `""` |
 | `scheduler.features.htmlInjection.injectHead` | HTML to inject in <head> section | `string` | `""` |
-| `scheduler.features.letsEncrypt.autoLetsEncrypt` | Enable automatic Let's Encrypt certificates | `string` | `"no"` |
+| `scheduler.features.letsEncrypt.autoLetsEncrypt` | Enable automatic Let's Encrypt certificates | `string` | `""` |
 | `scheduler.features.letsEncrypt.emailLetsEncrypt` | Email for Let's Encrypt notifications | `string` | `""` |
-| `scheduler.features.letsEncrypt.letsEncryptChallenge` | Challenge type: "http" or "dns" | `string` | `"http"` |
+| `scheduler.features.letsEncrypt.letsEncryptChallenge` | Challenge type: "http" or "dns" | `string` | `""` |
 | `scheduler.features.letsEncrypt.letsEncryptDnsProvider` | DNS provider for DNS challenges | `string` | `""` |
-| `scheduler.features.letsEncrypt.useLetsEncryptWildcard` | Enable wildcard certificates (DNS challenges only) | `string` | `"no"` |
-| `scheduler.features.metrics.metricsMaxBlockedRequests` | Max blocked requests per worker | `string` | `"1000"` |
-| `scheduler.features.metrics.metricsMemorySize` | Memory size for metrics storage | `string` | `"16m"` |
-| `scheduler.features.metrics.metricsSaveToRedis` | Save metrics to Redis | `string` | `"yes"` |
-| `scheduler.features.metrics.useMetrics` | Enable metrics collection | `string` | `"yes"` |
+| `scheduler.features.letsEncrypt.useLetsEncryptWildcard` | Enable wildcard certificates (DNS challenges only) | `string` | `""` |
+| `scheduler.features.metrics.metricsMaxBlockedRequests` | Max blocked requests per worker | `string` | `""` |
+| `scheduler.features.metrics.metricsMemorySize` | Memory size for metrics storage | `string` | `""` |
+| `scheduler.features.metrics.metricsSaveToRedis` | Save metrics to Redis | `string` | `""` |
+| `scheduler.features.metrics.useMetrics` | Enable metrics collection | `string` | `""` |
 | `scheduler.features.modsecurity.modsecurityCrsPlugins` | List of CRS plugins to install (space-separated) | `string` | `""` |
-| `scheduler.features.modsecurity.modsecurityCrsVersion` | CRS version: "3", "4", or "nightly" | `string` | `"4"` |
-| `scheduler.features.modsecurity.modsecuritySecRuleEngine` | Rule engine: "On", "DetectionOnly", or "Off" | `string` | `"On"` |
-| `scheduler.features.modsecurity.useModsecurity` | Enable ModSecurity Web Application Firewall | `string` | `"yes"` |
-| `scheduler.features.modsecurity.useModsecurityCrs` | Enable OWASP Core Rule Set | `string` | `"yes"` |
-| `scheduler.features.modsecurity.useModsecurityCrsPlugins` | Enable CRS plugins for enhanced protection | `string` | `"yes"` |
+| `scheduler.features.modsecurity.modsecurityCrsVersion` | CRS version: "3", "4", or "nightly" | `string` | `""` |
+| `scheduler.features.modsecurity.modsecuritySecRuleEngine` | Rule engine: "On", "DetectionOnly", or "Off" | `string` | `""` |
+| `scheduler.features.modsecurity.useModsecurity` | Enable ModSecurity Web Application Firewall | `string` | `""` |
+| `scheduler.features.modsecurity.useModsecurityCrs` | Enable OWASP Core Rule Set | `string` | `""` |
+| `scheduler.features.modsecurity.useModsecurityCrsPlugins` | Enable CRS plugins for enhanced protection | `string` | `""` |
 | `scheduler.features.php.localPhp` | Local PHP-FPM socket | `string` | `""` |
 | `scheduler.features.php.localPhpPath` | Local PHP-FPM path | `string` | `""` |
 | `scheduler.features.php.remotePhp` | Remote PHP-FPM host | `string` | `""` |
-| `scheduler.features.php.remotePhpPort` | Remote PHP-FPM port | `string` | `"9000"` |
+| `scheduler.features.php.remotePhpPort` | Remote PHP-FPM port | `string` | `""` |
 | `scheduler.features.php.remotephpPath` | Remote PHP-FPM path | `string` | `""` |
-| `scheduler.features.rateLimit.limitConnMaxHttp1` | Max HTTP/1.1 connections per IP | `string` | `"10"` |
-| `scheduler.features.rateLimit.limitConnMaxHttp2` | Max HTTP/2 connections per IP | `string` | `"100"` |
-| `scheduler.features.rateLimit.limitConnMaxHttp3` | Max HTTP/3 connections per IP | `string` | `"100"` |
-| `scheduler.features.rateLimit.limitReqRate` | Rate limit (e.g., "2r/s", "60r/m") | `string` | `"2r/s"` |
-| `scheduler.features.rateLimit.limitReqUrl` | URL pattern to apply rate limiting | `string` | `"/"` |
-| `scheduler.features.rateLimit.useLimitConn` | Enable connection limiting | `string` | `"no"` |
-| `scheduler.features.rateLimit.useLimitReq` | Enable request rate limiting | `string` | `"no"` |
+| `scheduler.features.rateLimit.limitConnMaxHttp1` | Max HTTP/1.1 connections per IP | `string` | `""` |
+| `scheduler.features.rateLimit.limitConnMaxHttp2` | Max HTTP/2 connections per IP | `string` | `""` |
+| `scheduler.features.rateLimit.limitConnMaxHttp3` | Max HTTP/3 connections per IP | `string` | `""` |
+| `scheduler.features.rateLimit.limitReqRate` | Rate limit (e.g., "2r/s", "60r/m") | `string` | `""` |
+| `scheduler.features.rateLimit.limitReqUrl` | URL pattern to apply rate limiting | `string` | `""` |
+| `scheduler.features.rateLimit.useLimitConn` | Enable connection limiting | `string` | `""` |
+| `scheduler.features.rateLimit.useLimitReq` | Enable request rate limiting | `string` | `""` |
 | `scheduler.features.realIp.realIpFrom` | Trusted proxy IPs (space-separated CIDR) | `string` | `""` |
-| `scheduler.features.realIp.realIpHeader` | Header containing real IP | `string` | `"X-Forwarded-For"` |
-| `scheduler.features.realIp.realIpRecursive` | Enable recursive IP detection | `string` | `"yes"` |
-| `scheduler.features.realIp.useProxyProtocol` | Enable PROXY protocol support | `string` | `"no"` |
-| `scheduler.features.realIp.useRealIp` | Enable real IP detection (behind proxy/load balancer) | `string` | `"no"` |
+| `scheduler.features.realIp.realIpHeader` | Header containing real IP | `string` | `""` |
+| `scheduler.features.realIp.realIpRecursive` | Enable recursive IP detection | `string` | `""` |
+| `scheduler.features.realIp.useProxyProtocol` | Enable PROXY protocol support | `string` | `""` |
+| `scheduler.features.realIp.useRealIp` | Enable real IP detection (behind proxy/load balancer) | `string` | `""` |
 | `scheduler.features.redirect.redirectFrom` | Path to redirect from | `string` | `""` |
 | `scheduler.features.redirect.redirectTo` | Destination URL | `string` | `""` |
-| `scheduler.features.redirect.redirectToRequestUri` | Preserve request URI | `string` | `"yes"` |
-| `scheduler.features.redirect.redirectToStatusCode` | HTTP status code for redirect | `string` | `"301"` |
-| `scheduler.features.reverseProxy.reverseProxyConnectTimeout` | Connection timeout | `string` | `"10s"` |
+| `scheduler.features.redirect.redirectToRequestUri` | Preserve request URI | `string` | `""` |
+| `scheduler.features.redirect.redirectToStatusCode` | HTTP status code for redirect | `string` | `""` |
+| `scheduler.features.reverseProxy.reverseProxyConnectTimeout` | Connection timeout | `string` | `""` |
 | `scheduler.features.reverseProxy.reverseProxyHost` | Backend server URLs (multiple values supported with suffix _1, _2, etc.) | `string` | `""` |
-| `scheduler.features.reverseProxy.reverseProxyReadTimeout` | Read timeout | `string` | `"60s"` |
-| `scheduler.features.reverseProxy.reverseProxySendTimeout` | Send timeout | `string` | `"60s"` |
-| `scheduler.features.reverseProxy.reverseProxyUrl` | URL paths to proxy (multiple values supported with suffix _1, _2, etc.) | `string` | `"/"` |
-| `scheduler.features.reverseProxy.useReverseProxy` | Enable reverse proxy functionality | `string` | `"no"` |
-| `scheduler.features.reverseScan.reverseScanPorts` | Ports to scan on client (space-separated) | `string` | `"22 80 443 3128 8000 8080"` |
-| `scheduler.features.reverseScan.reverseScanTimeout` | Scan timeout (milliseconds) | `string` | `"500"` |
-| `scheduler.features.reverseScan.useReverseScan` | Enable client port scanning | `string` | `"no"` |
+| `scheduler.features.reverseProxy.reverseProxyReadTimeout` | Read timeout | `string` | `""` |
+| `scheduler.features.reverseProxy.reverseProxySendTimeout` | Send timeout | `string` | `""` |
+| `scheduler.features.reverseProxy.reverseProxyUrl` | URL paths to proxy (multiple values supported with suffix _1, _2, etc.) | `string` | `""` |
+| `scheduler.features.reverseProxy.useReverseProxy` | Enable reverse proxy functionality | `string` | `""` |
+| `scheduler.features.reverseScan.reverseScanPorts` | Ports to scan on client (space-separated) | `string` | `""` |
+| `scheduler.features.reverseScan.reverseScanTimeout` | Scan timeout (milliseconds) | `string` | `""` |
+| `scheduler.features.reverseScan.useReverseScan` | Enable client port scanning | `string` | `""` |
 | `scheduler.features.robotsTxt.robotsTxtCommunityLists` | Community lists to include | `string` | `""` |
 | `scheduler.features.robotsTxt.robotsTxtDarkvisitorsToken` | DarkVisitors API token | `string` | `""` |
 | `scheduler.features.robotsTxt.robotsTxtRule` | Manual robots.txt rules (multiple values supported) | `string` | `""` |
 | `scheduler.features.robotsTxt.robotsTxtSitemap` | Sitemap URLs (multiple values supported) | `string` | `""` |
-| `scheduler.features.robotsTxt.useRobotsTxt` | Enable robots.txt generation | `string` | `"no"` |
+| `scheduler.features.robotsTxt.useRobotsTxt` | Enable robots.txt generation | `string` | `""` |
 | `scheduler.features.securityTxt.securityTxtContact` | Contact information (multiple values supported) | `string` | `""` |
 | `scheduler.features.securityTxt.securityTxtExpires` | Expiration date (ISO 8601 format) | `string` | `""` |
 | `scheduler.features.securityTxt.securityTxtPolicy` | Security policy URL | `string` | `""` |
-| `scheduler.features.securityTxt.useSecurityTxt` | Enable security.txt file | `string` | `"no"` |
-| `scheduler.features.sessions.sessionsAbsoluteTimeout` | Absolute timeout (seconds) | `string` | `"86400"` |
-| `scheduler.features.sessions.sessionsCheckIp` | Check IP address consistency | `string` | `"yes"` |
-| `scheduler.features.sessions.sessionsCheckUserAgent` | Check User-Agent consistency | `string` | `"yes"` |
-| `scheduler.features.sessions.sessionsIdlingTimeout` | Idle timeout (seconds) | `string` | `"1800"` |
-| `scheduler.features.sessions.sessionsName` | Session cookie name | `string` | `"bwcookie"` |
-| `scheduler.features.sessions.sessionsRollingTimeout` | Rolling timeout (seconds) | `string` | `"3600"` |
+| `scheduler.features.securityTxt.useSecurityTxt` | Enable security.txt file | `string` | `""` |
+| `scheduler.features.sessions.sessionsAbsoluteTimeout` | Absolute timeout (seconds) | `string` | `""` |
+| `scheduler.features.sessions.sessionsCheckIp` | Check IP address consistency | `string` | `""` |
+| `scheduler.features.sessions.sessionsCheckUserAgent` | Check User-Agent consistency | `string` | `""` |
+| `scheduler.features.sessions.sessionsIdlingTimeout` | Idle timeout (seconds) | `string` | `""` |
+| `scheduler.features.sessions.sessionsName` | Session cookie name | `string` | `""` |
+| `scheduler.features.sessions.sessionsRollingTimeout` | Rolling timeout (seconds) | `string` | `""` |
 | `scheduler.features.sessions.sessionsSecret` | Session secret key (leave empty to auto-generate) | `string` | `""` |
-| `scheduler.features.ssl.autoRedirectHttpToHttps` | Auto-redirect HTTP to HTTPS | `string` | `"yes"` |
-| `scheduler.features.ssl.listenHttps` | Enable HTTPS listening | `string` | `"yes"` |
-| `scheduler.features.ssl.sslCiphersLevel` | Cipher security level: "old", "intermediate", "modern" | `string` | `"modern"` |
-| `scheduler.features.ssl.sslProtocols` | SSL protocols to support | `string` | `"TLSv1.2 TLSv1.3"` |
-| `scheduler.features.whitelist.useWhitelist` | Enable whitelist functionality | `string` | `"no"` |
+| `scheduler.features.ssl.autoRedirectHttpToHttps` | Auto-redirect HTTP to HTTPS | `string` | `""` |
+| `scheduler.features.ssl.listenHttps` | Enable HTTPS listening | `string` | `""` |
+| `scheduler.features.ssl.sslCiphersLevel` | Cipher security level: "old", "intermediate", "modern" | `string` | `""` |
+| `scheduler.features.ssl.sslProtocols` | SSL protocols to support | `string` | `""` |
+| `scheduler.features.whitelist.useWhitelist` | Enable whitelist functionality | `string` | `""` |
 | `scheduler.features.whitelist.whitelistIp` | Manual IP whitelist (space-separated CIDR) | `string` | `""` |
 | `scheduler.features.whitelist.whitelistIpUrls` | Whitelist URLs for automatic updates | `string` | `""` |
 | `scheduler.livenessProbe.exec.command` | Configuration for command | `list` | `['/usr/share/bunkerweb/helpers/healthcheck-scheduler.sh']` |
@@ -362,7 +375,7 @@ Kubernetes controller for automatic Ingress management
 | `controller.readinessProbe` | Readiness probe configuration | `object` | See nested values |
 | `controller.repository` | Container image configuration | `string` | `"bunkerity/bunkerweb-autoconf"` |
 | `controller.securityContext` | Security context for BunkerWeb container | `object` | See nested values |
-| `controller.tag` | Configuration for tag | `string` | `"1.6.4"` |
+| `controller.tag` | Configuration for tag | `string` | `"1.6.5"` |
 | `controller.tolerations` | Tolerations (overrides global setting) | `list` | `[]` |
 | `controller.livenessProbe.exec` | Configuration for exec | `object` | See nested values |
 | `controller.livenessProbe.failureThreshold` | Configuration for failureThreshold | `int` | `3` |
@@ -391,7 +404,7 @@ Database backend for BunkerWeb configuration and logs
 | Parameter | Description | Type | Default |
 |-----------|-------------|------|---------|
 | `mariadb` | Database backend for BunkerWeb configuration and logs | `object` | See nested values |
-| `mariadb.args` | Additional arguments for MariaDB | `list` | `[]` |
+| `mariadb.args` | Additional arguments for MariaDB | `list` | `['--max-allowed-packet=67108864']` |
 | `mariadb.config` | Database configuration | `object` | See nested values |
 | `mariadb.enabled` | Enable external service creation | `bool` | `true` |
 | `mariadb.imagePullSecrets` | Image pull secrets (overrides global setting) | `list` | `[]` |
@@ -460,11 +473,11 @@ Dashboards and visualization
 | `grafana.replicas` | Number of replicas (for Deployment & StatefulSet kind) Minimum 2 for high availability and PodDisrup... | `int` | `1` |
 | `grafana.repository` | Container image configuration | `string` | `"grafana/grafana"` |
 | `grafana.securityContext` | Security context for BunkerWeb container | `object` | `{}` |
-| `grafana.service` | Service configuration | `object` | See nested values |
+| `grafana.service` | Internal service for communication between components (scheduler, controller) | `object` | See nested values |
 | `grafana.tag` | Configuration for tag | `string` | `"latest"` |
-| `grafana.ingress.enabled` | Enable log collection sidecar | `bool` | `false` |
+| `grafana.ingress.enabled` | Configuration for enabled | `bool` | `false` |
 | `grafana.persistence.accessModes` | Access modes for the persistent volume | `list` | `['ReadWriteOnce']` |
-| `grafana.persistence.enabled` | Enable log collection sidecar | `bool` | `false` |
+| `grafana.persistence.enabled` | Configuration for enabled | `bool` | `false` |
 | `grafana.persistence.size` | Storage size for database | `string` | `"10Gi"` |
 | `grafana.persistence.storageClass` | Storage class for database persistence Leave empty for default storage class | `string` | `""` |
 | `grafana.prometheusDatasource.access` | Configuration for access | `string` | `"proxy"` |
@@ -494,7 +507,7 @@ Metrics collection and storage
 | `prometheus.securityContext` | Security context for BunkerWeb container | `object` | See nested values |
 | `prometheus.tag` | Configuration for tag | `string` | `"v3.3.1"` |
 | `prometheus.persistence.accessModes` | Access modes for the persistent volume | `list` | `['ReadWriteOnce']` |
-| `prometheus.persistence.enabled` | Enable log collection sidecar | `bool` | `true` |
+| `prometheus.persistence.enabled` | Configuration for enabled | `bool` | `true` |
 | `prometheus.persistence.size` | Storage size for database | `string` | `"8Gi"` |
 | `prometheus.persistence.storageClass` | Storage class for database persistence Leave empty for default storage class | `string` | `""` |
 | `prometheus.securityContext.fsGroup` | Configuration for fsGroup | `int` | `65534` |

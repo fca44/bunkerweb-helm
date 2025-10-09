@@ -188,7 +188,7 @@ bunkerweb:
 
   # Internal service for communication between components (scheduler, controller)
   service:
-    # Use headless service (only for StatefulSet kind)
+    # Use headless service (only for StatefulSet kind), don't forget to edit scheduler extraEnvs BUNKERWEB_INSTANCES
     headless: false
 
   # Container image configuration
@@ -262,6 +262,22 @@ bunkerweb:
     periodSeconds: 1
     timeoutSeconds: 1
     failureThreshold: 3
+
+  # Horizontal Pod Autoscaler configuration
+  # Automatically scales the number of pods based on CPU/memory usage
+  # If targetKind is StatefulSet, make sure to set bunkerweb.service.headless to true and adjust scheduler extraEnvs BUNKERWEB_INSTANCES
+  hpa:
+    enabled: false
+    targetKind: Deployment      # Deployment or StatefulSet only
+    minReplicas: 2
+    maxReplicas: 10
+    cpu:
+      enabled: true
+      targetAverageUtilization: 60
+    memory:
+      enabled: true
+      targetAverageUtilization: 70
+
 
   # Custom volumes configuration
   # Allows mounting additional volumes to the BunkerWeb container
