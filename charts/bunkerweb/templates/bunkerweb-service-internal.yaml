@@ -8,16 +8,16 @@ metadata:
 spec:
   selector:
     bunkerweb.io/component: "bunkerweb"
-{{ if .Values.bunkerweb.service.headless }}
+  {{- if and .Values.bunkerweb.service.headless (ne .Values.bunkerweb.service.headless false) }}
   clusterIP: None
-{{ else }}
+  {{- else }}
   type: ClusterIP
   ports:
     - name: bwapi
       protocol: TCP
       port: 5000
       targetPort: 5000
-{{ end }}
+  {{- end }}
 ---
 {{- if .Values.scheduler.usePrometheusExporter -}}
 apiVersion: v1

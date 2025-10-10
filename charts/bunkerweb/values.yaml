@@ -224,6 +224,12 @@ bunkerweb:
       enabled: false
       targetAverageUtilization: 70
 
+  # Internal service configuration (for inter-pod communication)
+  service:
+    # Use headless service (clusterIP: None) for service discovery
+    # If false, creates a ClusterIP service with BWAPI port 5000
+    headless: true
+
   # Image pull secrets (overrides global setting)
   imagePullSecrets: []
 
