@@ -12,6 +12,7 @@ spec:
   selector:
     matchLabels:
       {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
+      bunkerweb.io/component: "bunkerweb"
   template:
     metadata:
       annotations:
