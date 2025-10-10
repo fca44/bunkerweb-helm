@@ -8,7 +8,11 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: {{ .Values.bunkerweb.hpa.targetKind | default "Deployment" }}
+    {{- if and .Values.bunkerweb.hpa.nameOverride (ne .Values.bunkerweb.hpa.nameOverride "") }}
+    name: {{ .Values.bunkerweb.hpa.nameOverride }}
+    {{- else }}
     name: {{ include "bunkerweb.fullname" . }}
+    {{- end }}
   {{- if ne .Values.bunkerweb.hpa.targetKind "DaemonSet" }}
   minReplicas: {{ .Values.bunkerweb.hpa.minReplicas | default 2 }}
   maxReplicas: {{ .Values.bunkerweb.hpa.maxReplicas | default 10 }}
