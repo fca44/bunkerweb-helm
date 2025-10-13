@@ -53,8 +53,10 @@ spec:
               {{- if .Values.bunkerweb.hostPorts }}
               hostPort: 443
               {{- end }}
+            {{- if and .Values.bunkerweb.usePrometheusExporter }}
             - containerPort: 9113
               name: metrics
+            {{- end }}
           env:
             # Mandatory for k8s integration
             - name: KUBERNETES_MODE
@@ -75,6 +77,10 @@ spec:
           {{- with .Values.bunkerweb.readinessProbe }}
           readinessProbe:
             {{- toYaml . | nindent 12}}
+          {{- end }}
+          {{- with .Values.bunkerweb.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
           {{- end }}
     {{- if .Values.bunkerweb.nodeSelector }}
       {{- with .Values.bunkerweb.nodeSelector }}
@@ -105,6 +111,10 @@ spec:
     {{- end }}
       {{- with .Values.topologySpreadConstraints }}
       topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.bunkerweb.volumes }}
+      volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 {{- end }}

@@ -1,0 +1,34 @@
+{{- if and .Values.grafana.enabled .Values.grafana.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-{{ include "bunkerweb.fullname" . }}
+  namespace: {{ include "bunkerweb.namespace" . }}
+  labels:
+    {{- include "bunkerweb.labels" . | nindent 4 }}
+  annotations:
+    {{- with .Values.grafana.ingress.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.grafana.ingress.ingressClassName }}
+  ingressClassName: {{ .Values.grafana.ingress.ingressClassName }}
+  {{- end}}
+  {{- if .Values.grafana.ingress.tlsSecretName }}
+  tls:
+    - hosts:
+      - {{ .Values.grafana.ingress.serverName }}
+      secretName: {{ .Values.grafana.ingress.tlsSecretName }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.grafana.ingress.serverName }}
+      http:
+        paths:
+          - path: {{ .Values.grafana.ingress.serverPath }}
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana-{{ include "bunkerweb.fullname" . }}
+                port:
+                  number: 3000
+{{- end }}

@@ -174,9 +174,6 @@ bunkerweb:
   # StatefulSet: For stable network IDs and storage (not typical for ingress)
   kind: Deployment
 
-  # Replica count for Deployment mode and PodDisruptionBudget
-  replicaCount: 1
-
   # Pod annotations for Kubernetes integration (required)
   # This enables BunkerWeb to be managed by the controller
   enableInstance: true
@@ -185,13 +182,53 @@ bunkerweb:
   # Allows binding to ports 80/443 on each node
   hostPorts: true
 
-  # Number of replicas (only for Deployment kind)
+  # Number of replicas (for Deployment & StatefulSet kind)
+  # Minimum 2 for high availability and PodDisruptionBudget
   replicas: 1
 
   # Container image configuration
   repository: bunkerity/bunkerweb
-  tag: 1.6.4
+  tag: 1.6.5
   pullPolicy: Always
+
+  # Resource requests and limits
+  # RECOMMENDED: Uncomment and adjust for production
+  # resources:
+  #   requests:
+  #     cpu: "2000m"
+  #     memory: "4096Mi"
+  #   limits:
+  #     cpu: "4000m"
+  #     memory: "8192Mi"
+
+  # Horizontal Pod Autoscaler (HPA) configuration
+  # Make sure to set resources.requests for CPU and/or memory
+  hpa:
+    # Enable HPA for bunkerweb component
+    enabled: false
+    # Target kind for scaling (Deployment or StatefulSet)
+    targetKind: "Deployment"
+    # Optional name override for the target resource
+    # If empty, uses the default release fullname
+    nameOverride: ""
+    # Minimum number of replicas (ignored for DaemonSet)
+    minReplicas: 2
+    # Maximum number of replicas
+    maxReplicas: 10
+    # CPU-based scaling configuration
+    cpu:
+      enabled: true
+      targetAverageUtilization: 60
+    # Memory-based scaling configuration
+    memory:
+      enabled: false
+      targetAverageUtilization: 70
+
+  # Internal service configuration (for inter-pod communication)
+  service:
+    # Use headless service (clusterIP: None) for service discovery
+    # If false, creates a ClusterIP service with BWAPI port 5000
+    headless: true
 
   # Image pull secrets (overrides global setting)
   imagePullSecrets: []
@@ -209,16 +246,6 @@ bunkerweb:
   # soft: Prefers not to schedule pods on same node
   # hard: Never schedules pods on same node
   podAntiAffinityPreset: "soft"
-
-  # Resource requests and limits
-  # RECOMMENDED: Uncomment and adjust for production
-  # resources:
-  #   requests:
-  #     cpu: "2000m"
-  #     memory: "4096Mi"
-  #   limits:
-  #     cpu: "4000m"
-  #     memory: "8192Mi"
 
   # Additional pod annotations
   podAnnotations: {}
@@ -254,18 +281,36 @@ bunkerweb:
     exec:
       command:
         - /usr/share/bunkerweb/helpers/healthcheck.sh
+        - ok
     initialDelaySeconds: 30
     periodSeconds: 1
     timeoutSeconds: 1
     failureThreshold: 3
+
+  # Custom volumes configuration
+  # Allows mounting additional volumes to the BunkerWeb container
+  volumes: []
+  # Example:
+  # volumes:
+  #   - name: shared-data
+  #     persistentVolumeClaim:
+  #       claimName: shared-pvc
+
+  # Custom volume mounts configuration
+  # Defines where to mount the custom volumes in the container
+  volumeMounts: []
+  # Example:
+  # volumeMounts:
+  #   - name: shared-data
+  #     mountPath: /var/lib/bunkerweb/shared
+
   ## PodDisruptionBudget for default backend
   ## bunkerweb Pod Disruption Budget configuration
   ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
-  ## @param bunkerweb.pdb.create Enable Pod Disruption Budget configuration
-  ## @param bunkerweb.pdb.minAvailable Minimum number/percentage of Default backend pods that should remain scheduled
-  ## @param bunkerweb.pdb.maxUnavailable Maximum number/percentage of Default backend pods that should remain scheduled
   ##
   pdb:
+    # Enable creation of Pod Disruption Budget
+    # Make sure you have at least 2 replicas if enabled
     create: true
 
     # Minimum number/percentage of pods that must remain available
@@ -284,7 +329,7 @@ bunkerweb:
 scheduler:
   # Container image configuration
   repository: bunkerity/bunkerweb-scheduler
-  tag: 1.6.4
+  tag: 1.6.5
   pullPolicy: Always
 
   # Image pull secrets (overrides global setting)
@@ -321,7 +366,451 @@ scheduler:
       drop:
         - ALL
 
-  # Additional environment variables
+  # PRO Features configuration
+  # BunkerWeb PRO license key for advanced features
+  proLicenseKey: ""
+  # Enable Prometheus metrics exporter and creates a service for it
+  # Requires BunkerWeb PRO license
+  usePrometheusExporter: false
+  # ==================================================== #
+
+  # BunkerWeb feature configuration
+  # These settings control the behavior of BunkerWeb security features
+  # These features will be applied by default on any new services, but could be overwritten on a per service basis
+  # For more details, visit: https://docs.bunkerweb.io/latest/features/
+  features:
+    # =============================================================================
+    # GLOBAL SETTINGS
+    # =============================================================================
+    global:
+      # Security mode: "detect" for monitoring only, "block" for active protection
+      securityMode: ""
+      # Default server protection
+      disableDefaultServer: ""
+      disableDefaultServerStrictSni: ""
+
+    # =============================================================================
+    # MODSECURITY WAF
+    # =============================================================================
+    modsecurity:
+      # Enable ModSecurity Web Application Firewall
+      useModsecurity: ""
+      # Enable OWASP Core Rule Set
+      useModsecurityCrs: ""
+      # CRS version: "3", "4", or "nightly"
+      modsecurityCrsVersion: ""
+      # Rule engine: "On", "DetectionOnly", or "Off"
+      modsecuritySecRuleEngine: ""
+      # Enable CRS plugins for enhanced protection
+      useModsecurityCrsPlugins: ""
+      # List of CRS plugins to install (space-separated)
+      modsecurityCrsPlugins: ""
+
+    # =============================================================================
+    # ANTIBOT PROTECTION
+    # =============================================================================
+    antibot:
+      # Antibot challenge type: "no", "cookie", "javascript", "captcha", "recaptcha", "hcaptcha", "turnstile", "mcaptcha"
+      useAntibot: ""
+      # Challenge URI (must be unique and not used by your application)
+      antibotUri: ""
+      # Time limit to complete challenge (seconds)
+      antibotTimeResolve: ""
+      # Challenge validity duration (seconds)
+      antibotTimeValid: ""
+      # IPs to bypass antibot challenges (space-separated)
+      antibotIgnoreIp: ""
+      # URIs to bypass antibot challenges (regex patterns, space-separated)
+      antibotIgnoreUri: ""
+
+    # =============================================================================
+    # RATE LIMITING
+    # =============================================================================
+    rateLimit:
+      # Enable request rate limiting
+      useLimitReq: ""
+      # Rate limit (e.g., "2r/s", "60r/m")
+      limitReqRate: ""
+      # URL pattern to apply rate limiting
+      limitReqUrl: ""
+      # Enable connection limiting
+      useLimitConn: ""
+      # Max HTTP/1.1 connections per IP
+      limitConnMaxHttp1: ""
+      # Max HTTP/2 connections per IP
+      limitConnMaxHttp2: ""
+      # Max HTTP/3 connections per IP
+      limitConnMaxHttp3: ""
+
+    # =============================================================================
+    # BLACKLIST/WHITELIST
+    # =============================================================================
+    blacklist:
+      # Enable blacklist functionality
+      useBlacklist: ""
+      # Community blacklists to use
+      blacklistCommunityLists: ""
+      # Manual IP blacklist (space-separated)
+      blacklistIp: ""
+      # Blacklist URLs for automatic updates
+      blacklistIpUrls: ""
+
+    whitelist:
+      # Enable whitelist functionality
+      useWhitelist: ""
+      # Manual IP whitelist (space-separated CIDR)
+      whitelistIp: ""
+      # Whitelist URLs for automatic updates
+      whitelistIpUrls: ""
+
+    # =============================================================================
+    # COUNTRY BLOCKING
+    # =============================================================================
+    geoBlocking:
+      # Allowed countries (ISO 3166-1 alpha-2 codes, space-separated)
+      whitelistCountry: ""
+      # Blocked countries (ISO 3166-1 alpha-2 codes, space-separated)
+      blacklistCountry: ""
+
+    # =============================================================================
+    # BAD BEHAVIOR DETECTION
+    # =============================================================================
+    badBehavior:
+      # Enable bad behavior detection
+      useBadBehavior: ""
+      # HTTP status codes considered "bad" (space-separated)
+      badBehaviorStatusCodes: ""
+      # Threshold before banning IP
+      badBehaviorThreshold: ""
+      # Time window for counting bad requests (seconds)
+      badBehaviorCountTime: ""
+      # Ban duration (seconds, 0 = permanent)
+      badBehaviorBanTime: ""
+
+    # =============================================================================
+    # SSL/TLS CONFIGURATION
+    # =============================================================================
+    ssl:
+      # Enable HTTPS listening
+      listenHttps: ""
+      # SSL protocols to support
+      sslProtocols: ""
+      # Cipher security level: "old", "intermediate", "modern"
+      sslCiphersLevel: ""
+      # Auto-redirect HTTP to HTTPS
+      autoRedirectHttpToHttps: ""
+
+    # Let's Encrypt configuration
+    letsEncrypt:
+      # Enable automatic Let's Encrypt certificates
+      autoLetsEncrypt: ""
+      # Email for Let's Encrypt notifications
+      emailLetsEncrypt: ""
+      # Challenge type: "http" or "dns"
+      letsEncryptChallenge: ""
+      # DNS provider for DNS challenges
+      letsEncryptDnsProvider: ""
+      # Enable wildcard certificates (DNS challenges only)
+      useLetsEncryptWildcard: ""
+
+    # Custom SSL certificate
+    customSsl:
+      # Use custom SSL certificates
+      useCustomSsl: ""
+      # Certificate priority: "file" or "data"
+      customSslCertPriority: ""
+      # Certificate file path
+      customSslCert: ""
+      # Private key file path
+      customSslKey: ""
+
+    # =============================================================================
+    # COMPRESSION
+    # =============================================================================
+    compression:
+      # Enable GZIP compression
+      useGzip: ""
+      # GZIP compression level (1-9)
+      gzipCompLevel: ""
+      # Minimum response size for compression (bytes)
+      gzipMinLength: ""
+      # Enable Brotli compression
+      useBrotli: ""
+      # Brotli compression level (0-11)
+      brotliCompLevel: ""
+
+    # =============================================================================
+    # CLIENT CACHING
+    # =============================================================================
+    clientCache:
+      # Enable client-side caching
+      useClientCache: ""
+      # File extensions to cache (pipe-separated)
+      clientCacheExtensions: ""
+      # Cache-Control header value
+      clientCacheControl: ""
+      # Enable ETags
+      clientCacheEtag: ""
+
+    # =============================================================================
+    # REVERSE PROXY
+    # =============================================================================
+    reverseProxy:
+      # Enable reverse proxy functionality
+      useReverseProxy: ""
+      # Backend server URLs (multiple values supported with suffix _1, _2, etc.)
+      reverseProxyHost: ""
+      # URL paths to proxy (multiple values supported with suffix _1, _2, etc.)
+      reverseProxyUrl: ""
+      # Connection timeout
+      reverseProxyConnectTimeout: ""
+      # Send timeout
+      reverseProxySendTimeout: ""
+      # Read timeout
+      reverseProxyReadTimeout: ""
+
+    # =============================================================================
+    # REAL IP DETECTION
+    # =============================================================================
+    realIp:
+      # Enable real IP detection (behind proxy/load balancer)
+      useRealIp: ""
+      # Trusted proxy IPs (space-separated CIDR)
+      realIpFrom: ""
+      # Header containing real IP
+      realIpHeader: ""
+      # Enable recursive IP detection
+      realIpRecursive: ""
+      # Enable PROXY protocol support
+      useProxyProtocol: ""
+
+    # =============================================================================
+    # SECURITY HEADERS
+    # =============================================================================
+    headers:
+      # HSTS header
+      strictTransportSecurity: ""
+      # Content Security Policy
+      contentSecurityPolicy: ""
+      # CSP report-only mode
+      contentSecurityPolicyReportOnly: ""
+      # X-Frame-Options header
+      xFrameOptions: ""
+      # X-Content-Type-Options header
+      xContentTypeOptions: ""
+      # Referrer Policy
+      referrerPolicy: ""
+      # Headers to remove (space-separated)
+      removeHeaders: ""
+      # Custom headers (multiple values supported with suffix _1, _2, etc.)
+      customHeader: ""
+
+    # =============================================================================
+    # CORS CONFIGURATION
+    # =============================================================================
+    cors:
+      # Enable CORS
+      useCors: ""
+      # Allowed origins (regex pattern or "self" or "*")
+      corsAllowOrigin: ""
+      # Allowed HTTP methods
+      corsAllowMethods: ""
+      # Allowed headers
+      corsAllowHeaders: ""
+      # Allow credentials
+      corsAllowCredentials: ""
+
+    # =============================================================================
+    # DNSBL CHECKING
+    # =============================================================================
+    dnsbl:
+      # Enable DNSBL checking
+      useDnsbl: ""
+      # DNSBL servers to query (space-separated)
+      dnsblList: ""
+
+    # =============================================================================
+    # BUNKERNET THREAT INTELLIGENCE
+    # =============================================================================
+    bunkerNet:
+      # Enable BunkerNet threat intelligence
+      useBunkernet: ""
+      # BunkerNet API server
+      bunkernetServer: ""
+
+    # =============================================================================
+    # SESSION MANAGEMENT
+    # =============================================================================
+    sessions:
+      # Session secret key (leave empty to auto-generate)
+      sessionsSecret: ""
+      # Session cookie name
+      sessionsName: ""
+      # Idle timeout (seconds)
+      sessionsIdlingTimeout: ""
+      # Rolling timeout (seconds)
+      sessionsRollingTimeout: ""
+      # Absolute timeout (seconds)
+      sessionsAbsoluteTimeout: ""
+      # Check IP address consistency
+      sessionsCheckIp: ""
+      # Check User-Agent consistency
+      sessionsCheckUserAgent: ""
+
+    # =============================================================================
+    # METRICS AND MONITORING
+    # =============================================================================
+    metrics:
+      # Enable metrics collection
+      useMetrics: ""
+      # Memory size for metrics storage
+      metricsMemorySize: ""
+      # Max blocked requests per worker
+      metricsMaxBlockedRequests: ""
+      # Save metrics to Redis
+      metricsSaveToRedis: ""
+
+    # =============================================================================
+    # AUTH BASIC
+    # =============================================================================
+    authBasic:
+      # Enable HTTP Basic Authentication
+      useAuthBasic: ""
+      # Protection scope: "sitewide" or specific path
+      authBasicLocation: ""
+      # Username (multiple values supported with suffix _1, _2, etc.)
+      authBasicUser: ""
+      # Password (multiple values supported with suffix _1, _2, etc.)
+      authBasicPassword: ""
+      # Authentication prompt text
+      authBasicText: ""
+
+    # =============================================================================
+    # REDIRECTS
+    # =============================================================================
+    redirect:
+      # Path to redirect from
+      redirectFrom: ""
+      # Destination URL
+      redirectTo: ""
+      # Preserve request URI
+      redirectToRequestUri: ""
+      # HTTP status code for redirect
+      redirectToStatusCode: ""
+
+    # =============================================================================
+    # ERROR PAGES
+    # =============================================================================
+    errors:
+      # Custom error page mappings (ERROR_CODE=/path/to/file.html)
+      errors: ""
+      # HTTP error codes to intercept
+      interceptedErrorCodes: ""
+
+    # =============================================================================
+    # HTML INJECTION
+    # =============================================================================
+    htmlInjection:
+      # HTML to inject in <head> section
+      injectHead: ""
+      # HTML to inject before </body>
+      injectBody: ""
+
+    # =============================================================================
+    # ROBOTS.TXT
+    # =============================================================================
+    robotsTxt:
+      # Enable robots.txt generation
+      useRobotsTxt: ""
+      # DarkVisitors API token
+      robotsTxtDarkvisitorsToken: ""
+      # Community lists to include
+      robotsTxtCommunityLists: ""
+      # Manual robots.txt rules (multiple values supported)
+      robotsTxtRule: ""
+      # Sitemap URLs (multiple values supported)
+      robotsTxtSitemap: ""
+
+    # =============================================================================
+    # SECURITY.TXT
+    # =============================================================================
+    securityTxt:
+      # Enable security.txt file
+      useSecurityTxt: ""
+      # Contact information (multiple values supported)
+      securityTxtContact: ""
+      # Expiration date (ISO 8601 format)
+      securityTxtExpires: ""
+      # Security policy URL
+      securityTxtPolicy: ""
+
+    # =============================================================================
+    # CROWDSEC INTEGRATION
+    # =============================================================================
+    crowdSec:
+      # Enable CrowdSec integration
+      useCrowdSec: ""
+      # CrowdSec Local API URL
+      crowdSecApi: ""
+      # CrowdSec API key
+      crowdSecApiKey: ""
+      # Operation mode: "live" or "stream"
+      crowdSecMode: ""
+      # AppSec component URL (optional)
+      crowdSecAppsecUrl: ""
+
+    # =============================================================================
+    # PHP INTEGRATION
+    # =============================================================================
+    php:
+      # Remote PHP-FPM host
+      remotePhp: ""
+      # Remote PHP-FPM port
+      remotePhpPort: ""
+      # Remote PHP-FPM path
+      remotephpPath: ""
+      # Local PHP-FPM socket
+      localPhp: ""
+      # Local PHP-FPM path
+      localPhpPath: ""
+
+    # =============================================================================
+    # GREYLIST (CONDITIONAL ACCESS)
+    # =============================================================================
+    greylist:
+      # Enable greylist functionality
+      useGreylist: ""
+      # IP addresses to greylist (space-separated CIDR)
+      greylistIp: ""
+      # Greylist URLs for automatic updates
+      greylistIpUrls: ""
+
+    # =============================================================================
+    # REVERSE SCAN
+    # =============================================================================
+    reverseScan:
+      # Enable client port scanning
+      useReverseScan: ""
+      # Ports to scan on client (space-separated)
+      reverseScanPorts: ""
+      # Scan timeout (milliseconds)
+      reverseScanTimeout: ""
+
+    # =============================================================================
+    # BACKUP CONFIGURATION
+    # =============================================================================
+    backup:
+      # Enable backup functionality
+      useBackup: ""
+      # Backup frequency: "daily", "weekly", "monthly"
+      backupSchedule: ""
+      # Number of backups to retain
+      backupRotation: ""
+      # Backup directory
+      backupDirectory: ""
+
+  # Additional environment variables for advanced configuration
+  # These will be merged with the feature configuration above
   extraEnvs: []
 
   # Liveness probe configuration
@@ -329,18 +818,10 @@ scheduler:
     exec:
       command:
         - /usr/share/bunkerweb/helpers/healthcheck-scheduler.sh
-    initialDelaySeconds: 30
-    periodSeconds: 5
+    initialDelaySeconds: 90
+    periodSeconds: 10
     timeoutSeconds: 1
     failureThreshold: 3
-
-  # PRO Features configuration
-  # BunkerWeb PRO license key for advanced features
-  proLicenseKey: ""
-
-  # Enable Prometheus metrics exporter
-  # Requires BunkerWeb PRO license
-  usePrometheusExporter: false
 
 # =============================================================================
 # CONTROLLER COMPONENT
@@ -353,7 +834,7 @@ controller:
 
   # Container image configuration
   repository: bunkerity/bunkerweb-autoconf
-  tag: 1.6.4
+  tag: 1.6.5
   pullPolicy: Always
 
   # Image pull secrets (overrides global setting)
@@ -424,7 +905,7 @@ ui:
 
   # Container image configuration
   repository: bunkerity/bunkerweb-ui
-  tag: 1.6.4
+  tag: 1.6.5
   pullPolicy: Always
 
   # Image pull secrets (overrides global setting)
@@ -467,7 +948,7 @@ ui:
   # Log collection configuration
   logs:
     # Enable log collection sidecar
-    enabled: true
+    enabled: false
 
     # Syslog-ng container for log collection
     repository: balabit/syslog-ng
@@ -552,7 +1033,8 @@ mariadb:
 
   # Additional arguments for MariaDB
   # Example: args: ["--character-set-server=utf8mb4"]
-  args: []
+  args:
+    - "--max-allowed-packet=67108864"
 
   # Resource requests and limits
   # RECOMMENDED: Uncomment and adjust for production
@@ -722,20 +1204,12 @@ grafana:
   # Ingress configuration for external access
   ingress:
     enabled: false
-    # ingressClassName: ""
-    # className: ""
-    # annotations: {}
-    #   # kubernetes.io/ingress.class: nginx
-    #   # kubernetes.io/tls-acme: "true"
-    # hosts:
-    #   - host: chart-example.local
-    #     paths:
-    #       - path: /
-    #         pathType: ImplementationSpecific
-    # tls:
-    #   - secretName: grafana-tls
-    #     hosts:
-    #       - grafana.example.com
+    # ingressClassName: "bunkerweb"
+    # serverName: "grafana.example.com"
+    # serverPath: "/"
+    # tlsSecretName: "grafana-tls"
+    # annotations:
+    #   bunkerweb.io/AUTO_LETS_ENCRYPT: "yes"
 
   # Persistent storage configuration
   persistence:
@@ -768,8 +1242,7 @@ grafana:
   podLabels: {}
 
   # Security context for Grafana
-  securityContext:
-    {}
+  securityContext: {}
     # fsGroup: 472
     # runAsUser: 472
     # runAsGroup: 472

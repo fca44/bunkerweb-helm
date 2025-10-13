@@ -1,0 +1,37 @@
+{{- if .Values.bunkerweb.hpa.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "bunkerweb.fullname" . }}-hpa
+  namespace: {{ .Release.Namespace }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: {{ .Values.bunkerweb.hpa.targetKind | default "Deployment" }}
+    {{- if and .Values.bunkerweb.hpa.nameOverride (ne .Values.bunkerweb.hpa.nameOverride "") }}
+    name: {{ .Values.bunkerweb.hpa.nameOverride }}
+    {{- else }}
+    name: {{ include "bunkerweb.fullname" . }}
+    {{- end }}
+  {{- if ne .Values.bunkerweb.hpa.targetKind "DaemonSet" }}
+  minReplicas: {{ .Values.bunkerweb.hpa.minReplicas | default 2 }}
+  maxReplicas: {{ .Values.bunkerweb.hpa.maxReplicas | default 10 }}
+  {{- end }}
+  metrics:
+    {{- if .Values.bunkerweb.hpa.cpu.enabled }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.bunkerweb.hpa.cpu.targetAverageUtilization | default 60 }}
+    {{- end }}
+    {{- if .Values.bunkerweb.hpa.memory.enabled }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ .Values.bunkerweb.hpa.memory.targetAverageUtilization | default 70 }}
+    {{- end }}
+{{- end }}
