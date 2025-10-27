@@ -69,6 +69,9 @@ settings:
     # Kubernetes cluster domain name for service discovery
     domainName: "cluster.local"
 
+    # Annotations to be ignored by bunkerweb-controller when multiple ingress controllers (comma-separated)
+    ignoreAnnotations: ""
+
   # ----- GENERAL CONFIGURATION -----
   misc:
     # Database connection URI (auto-generated if using internal MariaDB)
