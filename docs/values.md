@@ -50,13 +50,13 @@ Main reverse proxy and WAF component
 | `bunkerweb.enableInstance` | Pod annotations for Kubernetes integration (required) This enables BunkerWeb to be managed by the co... | `bool` | `true` |
 | `bunkerweb.extraEnvs` | Additional environment variables | `list` | `[]` |
 | `bunkerweb.hostPorts` | Use host ports for direct traffic (only for DaemonSet) Allows binding to ports 80/443 on each node | `bool` | `true` |
-| `bunkerweb.hpa` | Horizontal Pod Autoscaler configuration Automatically scales the number of pods based on CPU/memory ... | `object` | See nested values |
+| `bunkerweb.hpa` | Resource requests and limits RECOMMENDED: Uncomment and adjust for production resources: requests: c... | `object` | See nested values |
 | `bunkerweb.imagePullSecrets` | Image pull secrets (overrides global setting) | `list` | `[]` |
 | `bunkerweb.kind` | Deployment type: "DaemonSet" or "Deployment" or "StatefulSet" DaemonSet: Runs one pod per node (reco... | `string` | `"Deployment"` |
 | `bunkerweb.livenessProbe` | Liveness probe configuration | `object` | See nested values |
 | `bunkerweb.nodeSelector` | Node selector (overrides global setting) | `object` | `{}` |
 | `bunkerweb.pdb` | volumeMounts: - name: shared-data mountPath: /var/lib/bunkerweb/shared # PodDisruptionBudget for def... | `object` | See nested values |
-| `bunkerweb.podAnnotations` | Resource requests and limits RECOMMENDED: Uncomment and adjust for production resources: requests: c... | `object` | `{}` |
+| `bunkerweb.podAnnotations` | Additional pod annotations | `object` | `{}` |
 | `bunkerweb.podAntiAffinityPreset` | Anti-affinity preset: "soft" or "hard" soft: Prefers not to schedule pods on same node hard: Never s... | `string` | `"soft"` |
 | `bunkerweb.podLabels` | Additional pod labels | `object` | `{}` |
 | `bunkerweb.pullPolicy` | Configuration for pullPolicy | `string` | `"Always"` |
@@ -64,17 +64,19 @@ Main reverse proxy and WAF component
 | `bunkerweb.replicas` | Number of replicas (for Deployment & StatefulSet kind) Minimum 2 for high availability and PodDisrup... | `int` | `1` |
 | `bunkerweb.repository` | Container image configuration | `string` | `"bunkerity/bunkerweb"` |
 | `bunkerweb.securityContext` | Security context for BunkerWeb container | `object` | See nested values |
-| `bunkerweb.service` | Internal service for communication between components (scheduler, controller) | `object` | See nested values |
+| `bunkerweb.service` | Internal service configuration (for inter-pod communication) | `object` | See nested values |
 | `bunkerweb.tag` | Configuration for tag | `string` | `"1.6.5"` |
 | `bunkerweb.tolerations` | Tolerations (overrides global setting) | `list` | `[]` |
 | `bunkerweb.volumeMounts` | volumes: - name: shared-data persistentVolumeClaim: claimName: shared-pvc Custom volume mounts confi... | `list` | `[]` |
 | `bunkerweb.volumes` | Custom volumes configuration Allows mounting additional volumes to the BunkerWeb container | `list` | `[]` |
-| `bunkerweb.hpa.cpu` | Configuration for cpu | `object` | See nested values |
-| `bunkerweb.hpa.enabled` | Configuration for enabled | `bool` | `false` |
-| `bunkerweb.hpa.maxReplicas` | Configuration for maxReplicas | `int` | `10` |
-| `bunkerweb.hpa.memory` | Configuration for memory | `object` | See nested values |
-| `bunkerweb.hpa.minReplicas` | Configuration for minReplicas | `int` | `2` |
-| `bunkerweb.hpa.targetKind` | Configuration for targetKind | `string` | `"Deployment"` |
+| `bunkerweb.hpa.behavior` | HPA behavior configuration Controls the scaling speed and stabilization | `object` | See nested values |
+| `bunkerweb.hpa.cpu` | CPU-based scaling configuration | `object` | See nested values |
+| `bunkerweb.hpa.enabled` | Enable HPA for bunkerweb component | `bool` | `false` |
+| `bunkerweb.hpa.maxReplicas` | Maximum number of replicas | `int` | `10` |
+| `bunkerweb.hpa.memory` | Memory-based scaling configuration | `object` | See nested values |
+| `bunkerweb.hpa.minReplicas` | Minimum number of replicas (ignored for DaemonSet) | `int` | `2` |
+| `bunkerweb.hpa.nameOverride` | Optional name override for the target resource If empty, uses the default release fullname | `string` | `""` |
+| `bunkerweb.hpa.targetKind` | Target kind for scaling (Deployment or StatefulSet) | `string` | `"Deployment"` |
 | `bunkerweb.livenessProbe.exec` | Configuration for exec | `object` | See nested values |
 | `bunkerweb.livenessProbe.failureThreshold` | Configuration for failureThreshold | `int` | `3` |
 | `bunkerweb.livenessProbe.initialDelaySeconds` | Configuration for initialDelaySeconds | `int` | `30` |
@@ -92,10 +94,12 @@ Main reverse proxy and WAF component
 | `bunkerweb.securityContext.capabilities` | Configuration for capabilities | `object` | See nested values |
 | `bunkerweb.securityContext.runAsGroup` | Configuration for runAsGroup | `int` | `101` |
 | `bunkerweb.securityContext.runAsUser` | Configuration for runAsUser | `int` | `101` |
-| `bunkerweb.service.headless` | Use headless service (only for StatefulSet kind), don't forget to edit scheduler extraEnvs BUNKERWEB... | `bool` | `false` |
+| `bunkerweb.service.headless` | Use headless service (clusterIP: None) for service discovery If false, creates a ClusterIP service w... | `bool` | `true` |
+| `bunkerweb.hpa.behavior.scaleDown` | Configuration for scaleDown | `object` | See nested values |
+| `bunkerweb.hpa.behavior.scaleUp` | Configuration for scaleUp | `object` | See nested values |
 | `bunkerweb.hpa.cpu.enabled` | Set to true to create an Ingress resource for the UI | `bool` | `true` |
 | `bunkerweb.hpa.cpu.targetAverageUtilization` | Configuration for targetAverageUtilization | `int` | `60` |
-| `bunkerweb.hpa.memory.enabled` | Set to true to create an Ingress resource for the UI | `bool` | `true` |
+| `bunkerweb.hpa.memory.enabled` | Set to true to create an Ingress resource for the UI | `bool` | `false` |
 | `bunkerweb.hpa.memory.targetAverageUtilization` | Configuration for targetAverageUtilization | `int` | `70` |
 | `bunkerweb.livenessProbe.exec.command` | Configuration for command | `list` | `['/usr/share/bunkerweb/helpers/healthcheck.sh']` |
 | `bunkerweb.readinessProbe.exec.command` | Configuration for command | `list` | `['/usr/share/bunkerweb/helpers/healthcheck.sh', 'ok']` |
@@ -116,7 +120,7 @@ Web interface for BunkerWeb management and monitoring
 | `ui.livenessProbe` | Liveness probe configuration | `object` | See nested values |
 | `ui.logs` | Log collection configuration | `object` | See nested values |
 | `ui.nodeSelector` | Node selector (overrides global setting) | `object` | `{}` |
-| `ui.podAnnotations` | Resource requests and limits RECOMMENDED: Uncomment and adjust for production resources: requests: c... | `object` | `{}` |
+| `ui.podAnnotations` | Additional pod annotations | `object` | `{}` |
 | `ui.podLabels` | Additional pod labels | `object` | `{}` |
 | `ui.pullPolicy` | Configuration for pullPolicy | `string` | `"Always"` |
 | `ui.readinessProbe` | Readiness probe configuration | `object` | See nested values |
@@ -129,7 +133,7 @@ Web interface for BunkerWeb management and monitoring
 | `ui.livenessProbe.initialDelaySeconds` | Configuration for initialDelaySeconds | `int` | `30` |
 | `ui.livenessProbe.periodSeconds` | Configuration for periodSeconds | `int` | `5` |
 | `ui.livenessProbe.timeoutSeconds` | Configuration for timeoutSeconds | `int` | `1` |
-| `ui.logs.enabled` | Configuration for enabled | `bool` | `false` |
+| `ui.logs.enabled` | Enable HPA for bunkerweb component | `bool` | `false` |
 | `ui.logs.persistence` | Persistent storage for logs | `object` | See nested values |
 | `ui.logs.pullPolicy` | Configuration for pullPolicy | `string` | `"Always"` |
 | `ui.logs.repository` | Syslog-ng container for log collection | `string` | `"balabit/syslog-ng"` |
@@ -163,7 +167,7 @@ Manages BunkerWeb configuration and coordination
 | `scheduler.imagePullSecrets` | Image pull secrets (overrides global setting) | `list` | `[]` |
 | `scheduler.livenessProbe` | Liveness probe configuration | `object` | See nested values |
 | `scheduler.nodeSelector` | Node selector (overrides global setting) | `object` | `{}` |
-| `scheduler.podAnnotations` | Resource requests and limits RECOMMENDED: Uncomment and adjust for production resources: requests: c... | `object` | `{}` |
+| `scheduler.podAnnotations` | Additional pod annotations | `object` | `{}` |
 | `scheduler.podLabels` | Additional pod labels | `object` | `{}` |
 | `scheduler.proLicenseKey` | PRO Features configuration BunkerWeb PRO license key for advanced features | `string` | `""` |
 | `scheduler.pullPolicy` | Configuration for pullPolicy | `string` | `"Always"` |
@@ -369,7 +373,7 @@ Kubernetes controller for automatic Ingress management
 | `controller.imagePullSecrets` | Image pull secrets (overrides global setting) | `list` | `[]` |
 | `controller.livenessProbe` | Liveness probe configuration | `object` | See nested values |
 | `controller.nodeSelector` | Node selector (overrides global setting) | `object` | `{}` |
-| `controller.podAnnotations` | Resource requests and limits RECOMMENDED: Uncomment and adjust for production resources: requests: c... | `object` | `{}` |
+| `controller.podAnnotations` | Additional pod annotations | `object` | `{}` |
 | `controller.podLabels` | Additional pod labels | `object` | `{}` |
 | `controller.pullPolicy` | Configuration for pullPolicy | `string` | `"Always"` |
 | `controller.readinessProbe` | Readiness probe configuration | `object` | See nested values |
@@ -466,18 +470,18 @@ Dashboards and visualization
 | `grafana.extraEnvs` | Additional environment variables | `list` | `[]` |
 | `grafana.ingress` | Ingress configuration for external access | `object` | See nested values |
 | `grafana.persistence` | Persistent storage configuration | `object` | See nested values |
-| `grafana.podAnnotations` | Resource requests and limits RECOMMENDED: Uncomment and adjust for production resources: requests: c... | `object` | `{}` |
+| `grafana.podAnnotations` | Additional pod annotations | `object` | `{}` |
 | `grafana.podLabels` | Additional pod labels | `object` | `{}` |
 | `grafana.prometheusDatasource` | Additional annotations for the PVC annotations: {} Prometheus data source configuration Automaticall... | `object` | See nested values |
 | `grafana.pullPolicy` | Configuration for pullPolicy | `string` | `"IfNotPresent"` |
 | `grafana.replicas` | Number of replicas (for Deployment & StatefulSet kind) Minimum 2 for high availability and PodDisrup... | `int` | `1` |
 | `grafana.repository` | Container image configuration | `string` | `"grafana/grafana"` |
 | `grafana.securityContext` | Security context for BunkerWeb container | `object` | `{}` |
-| `grafana.service` | Internal service for communication between components (scheduler, controller) | `object` | See nested values |
+| `grafana.service` | Internal service configuration (for inter-pod communication) | `object` | See nested values |
 | `grafana.tag` | Configuration for tag | `string` | `"latest"` |
-| `grafana.ingress.enabled` | Configuration for enabled | `bool` | `false` |
+| `grafana.ingress.enabled` | Enable HPA for bunkerweb component | `bool` | `false` |
 | `grafana.persistence.accessModes` | Access modes for the persistent volume | `list` | `['ReadWriteOnce']` |
-| `grafana.persistence.enabled` | Configuration for enabled | `bool` | `false` |
+| `grafana.persistence.enabled` | Enable HPA for bunkerweb component | `bool` | `false` |
 | `grafana.persistence.size` | Storage size for database | `string` | `"10Gi"` |
 | `grafana.persistence.storageClass` | Storage class for database persistence Leave empty for default storage class | `string` | `""` |
 | `grafana.prometheusDatasource.access` | Configuration for access | `string` | `"proxy"` |
@@ -499,7 +503,7 @@ Metrics collection and storage
 | `prometheus` | Metrics collection and storage | `object` | See nested values |
 | `prometheus.enabled` | Enable external service creation | `bool` | `false` |
 | `prometheus.persistence` | Persistent storage configuration | `object` | See nested values |
-| `prometheus.podAnnotations` | Resource requests and limits RECOMMENDED: Uncomment and adjust for production resources: requests: c... | `object` | `{}` |
+| `prometheus.podAnnotations` | Additional pod annotations | `object` | `{}` |
 | `prometheus.podLabels` | Additional pod labels | `object` | `{}` |
 | `prometheus.pullPolicy` | Configuration for pullPolicy | `string` | `"Always"` |
 | `prometheus.replicas` | Number of replicas (for Deployment & StatefulSet kind) Minimum 2 for high availability and PodDisrup... | `int` | `1` |
@@ -507,7 +511,7 @@ Metrics collection and storage
 | `prometheus.securityContext` | Security context for BunkerWeb container | `object` | See nested values |
 | `prometheus.tag` | Configuration for tag | `string` | `"v3.3.1"` |
 | `prometheus.persistence.accessModes` | Access modes for the persistent volume | `list` | `['ReadWriteOnce']` |
-| `prometheus.persistence.enabled` | Configuration for enabled | `bool` | `true` |
+| `prometheus.persistence.enabled` | Enable HPA for bunkerweb component | `bool` | `true` |
 | `prometheus.persistence.size` | Storage size for database | `string` | `"8Gi"` |
 | `prometheus.persistence.storageClass` | Storage class for database persistence Leave empty for default storage class | `string` | `""` |
 | `prometheus.securityContext.fsGroup` | Configuration for fsGroup | `int` | `65534` |
@@ -572,6 +576,7 @@ Configuration for BunkerWeb behavior in Kubernetes environment
 | `settings.redis` | Configuration for redis | `object` | See nested values |
 | `settings.ui` | Configuration for ui | `object` | See nested values |
 | `settings.kubernetes.domainName` | Kubernetes cluster domain name for service discovery | `string` | `"cluster.local"` |
+| `settings.kubernetes.ignoreAnnotations` | Annotations to be ignored by bunkerweb-controller when multiple ingress controllers (comma-separated... | `string` | `""` |
 | `settings.kubernetes.ingressClass` | Ingress class name that BunkerWeb will handle Must match the IngressClass resource name | `string` | `""` |
 | `settings.kubernetes.namespaces` | Comma-separated list of namespaces to monitor for Ingress resources Empty string means all namespace... | `string` | `""` |
 | `settings.misc.apiWhitelistIp` | IP ranges allowed to access BunkerWeb API (space-separated CIDR blocks) Includes common Kubernetes a... | `string` | `"127.0.0.0/8 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16"` |
