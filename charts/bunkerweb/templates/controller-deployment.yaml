@@ -58,6 +58,9 @@ spec:
               value: "{{ .Values.settings.kubernetes.ingressClass }}"
             - name: KUBERNETES_DOMAIN_NAME
               value: "{{ .Values.settings.kubernetes.domainName }}"
+            {{- if .Values.controller.extraEnvs }}
+              {{- toYaml .Values.controller.extraEnvs | nindent 12 }}
+            {{- end }}
     {{- if .Values.controller.nodeSelector }}
       {{- with .Values.controller.nodeSelector }}
       nodeSelector:
