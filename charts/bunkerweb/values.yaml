@@ -221,11 +221,11 @@ bunkerweb:
     # CPU-based scaling configuration
     cpu:
       enabled: true
-      targetAverageUtilization: 60
+      targetAverageUtilization: 90
     # Memory-based scaling configuration
     memory:
       enabled: false
-      targetAverageUtilization: 70
+      targetAverageUtilization: 90
     # HPA behavior configuration
     # Controls the scaling speed and stabilization
     behavior:
