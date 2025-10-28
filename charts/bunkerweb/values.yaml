@@ -69,6 +69,9 @@ settings:
     # Kubernetes cluster domain name for service discovery
     domainName: "cluster.local"
 
+    # Annotations to be ignored by bunkerweb-controller when multiple ingress controllers (comma-separated)
+    ignoreAnnotations: ""
+
   # ----- GENERAL CONFIGURATION -----
   misc:
     # Database connection URI (auto-generated if using internal MariaDB)
@@ -218,11 +221,42 @@ bunkerweb:
     # CPU-based scaling configuration
     cpu:
       enabled: true
-      targetAverageUtilization: 60
+      targetAverageUtilization: 90
     # Memory-based scaling configuration
     memory:
       enabled: false
-      targetAverageUtilization: 70
+      targetAverageUtilization: 90
+    # HPA behavior configuration
+    # Controls the scaling speed and stabilization
+    behavior:
+      scaleUp:
+        # Stabilization before scale up: waits for constant threshold crossing
+        stabilizationWindowSeconds: 60
+        policies:
+          # Policy 1: Max +100% of current replicas per minute
+          - type: Percent
+            value: 100
+            periodSeconds: 60
+          # Policy 2: Max +2 pods per minute
+          - type: Pods
+            value: 2
+            periodSeconds: 60
+        # Takes the MOST CONSERVATIVE of the 2 policies
+        selectPolicy: Min
+      scaleDown:
+        # Stabilization before scale down: waits for under-utilization
+        stabilizationWindowSeconds: 300
+        policies:
+          # Policy 1: Max -50% of current replicas per minute
+          - type: Percent
+            value: 50
+            periodSeconds: 60
+          # Policy 2: Max -1 pod per minute
+          - type: Pods
+            value: 1
+            periodSeconds: 60
+        # Takes the MOST CONSERVATIVE of the 2 policies
+        selectPolicy: Min
 
   # Internal service configuration (for inter-pod communication)
   service:

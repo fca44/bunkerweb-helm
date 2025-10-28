@@ -34,4 +34,41 @@ spec:
           type: Utilization
           averageUtilization: {{ .Values.bunkerweb.hpa.memory.targetAverageUtilization | default 70 }}
     {{- end }}
+  {{- if .Values.bunkerweb.hpa.behavior }}
+  behavior:
+    {{- if .Values.bunkerweb.hpa.behavior.scaleUp }}
+    scaleUp:
+      {{- if .Values.bunkerweb.hpa.behavior.scaleUp.stabilizationWindowSeconds }}
+      stabilizationWindowSeconds: {{ .Values.bunkerweb.hpa.behavior.scaleUp.stabilizationWindowSeconds }}
+      {{- end }}
+      {{- if .Values.bunkerweb.hpa.behavior.scaleUp.policies }}
+      policies:
+      {{- range .Values.bunkerweb.hpa.behavior.scaleUp.policies }}
+      - type: {{ .type }}
+        value: {{ .value }}
+        periodSeconds: {{ .periodSeconds }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.bunkerweb.hpa.behavior.scaleUp.selectPolicy }}
+      selectPolicy: {{ .Values.bunkerweb.hpa.behavior.scaleUp.selectPolicy }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.bunkerweb.hpa.behavior.scaleDown }}
+    scaleDown:
+      {{- if .Values.bunkerweb.hpa.behavior.scaleDown.stabilizationWindowSeconds }}
+      stabilizationWindowSeconds: {{ .Values.bunkerweb.hpa.behavior.scaleDown.stabilizationWindowSeconds }}
+      {{- end }}
+      {{- if .Values.bunkerweb.hpa.behavior.scaleDown.policies }}
+      policies:
+      {{- range .Values.bunkerweb.hpa.behavior.scaleDown.policies }}
+      - type: {{ .type }}
+        value: {{ .value }}
+        periodSeconds: {{ .periodSeconds }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.bunkerweb.hpa.behavior.scaleDown.selectPolicy }}
+      selectPolicy: {{ .Values.bunkerweb.hpa.behavior.scaleDown.selectPolicy }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
 {{- end }}
